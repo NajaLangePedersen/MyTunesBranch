@@ -4,7 +4,6 @@ import dk.easv.mytunes.BE.Song;
 import dk.easv.mytunes.DAL.DBConnector;
 // java imports
 import java.io.IOException;
-import java.nio.file.Files;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,18 +21,18 @@ public class SongDAO_db implements ISongDataAccess{
         try (Connection conn = databaseConnector.getConnection();
              Statement stmt = conn.createStatement())
         {
-            String sql = "SELECT * FROM dbo.Song;";
+            String sql = "SELECT * FROM dbo.Songs;";
             ResultSet rs = stmt.executeQuery(sql);
 
             // Loop through rows from the database result set
             while (rs.next()) {
 
                 //Map Database row to Song object
-                int id = rs.getInt("Id");
+                int id = rs.getInt("SongId");
                 String title = rs.getString("Title");
                 String artist = rs.getString("Artist");
-                double length = rs.getDouble("length");
-                String category = rs.getString("category");
+                double length = rs.getDouble("Length");
+                String category = rs.getString("Category");
 
                 Song song = new Song(id, title, artist, length, category);
                 allSongs.add(song);
@@ -49,7 +48,7 @@ public class SongDAO_db implements ISongDataAccess{
     }
 
     public Song createSong(Song newSong) throws Exception {
-        String sql = "INSERT INTO dbo.Song (id, title, artist, length, category) VALUES (?,?,?,?,?);";
+        String sql = "INSERT INTO dbo.Songs (title, artist, length, category) VALUES (?,?,?,?);";
 
         try (Connection conn = databaseConnector.getConnection()) {
             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -85,7 +84,7 @@ public class SongDAO_db implements ISongDataAccess{
     public void updateSong(Song song) throws Exception {
 
         //sql command
-        String sql = "UPDATE dbo.Song SET Title = ?, Artist = ? Length = ? Category = ? WHERE ID = ?";
+        String sql = "UPDATE dbo.Songs SET Title = ?, Artist = ?, Length = ?, Category = ? WHERE SongId = ?";
 
         try(Connection conn = databaseConnector.getConnection();
             PreparedStatement   stmt = conn.prepareStatement(sql))
@@ -109,7 +108,7 @@ public class SongDAO_db implements ISongDataAccess{
     public void deleteSong(Song song) throws Exception {
 
         // sql command
-        String sql = "DELETE FROM dbo.Song WHERE ID = ?;";
+        String sql = "DELETE FROM dbo.Songs WHERE SongId = ?;";
 
         try(Connection conn = databaseConnector.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql))

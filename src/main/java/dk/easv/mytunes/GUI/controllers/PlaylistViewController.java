@@ -4,17 +4,17 @@ package dk.easv.mytunes.GUI.controllers;
 import dk.easv.mytunes.BE.Playlist;
 import dk.easv.mytunes.GUI.models.PlaylistModel;
 
+//javaFX imports
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-
-public class PlaylistViewController implements Initializable {
+public class PlaylistViewController{
     private PlaylistModel pm;
+
 
     @FXML
     private TextField txtName;
@@ -24,15 +24,8 @@ public class PlaylistViewController implements Initializable {
 
     }
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle)
-    {
-        try{
-            pm = new PlaylistModel();
-        } catch (Exception e) {
-            displayError(e);
-            e.printStackTrace();
-        }
+    public void setModel(PlaylistModel pm){
+        this.pm = pm;
     }
 
 
@@ -51,12 +44,19 @@ public class PlaylistViewController implements Initializable {
             Playlist newPlaylist = new Playlist(-1, name);
 
             pm.createPlaylist(newPlaylist);
+
+            Node source = (Node) actionEvent.getSource();
+            Stage window = (Stage) source.getScene().getWindow();
+            window.close();
+
         }
     }
 
     @FXML
     private void onBtnCancel(ActionEvent actionEvent){
-
+        Node source = (Node) actionEvent.getSource();
+        Stage window = (Stage) source.getScene().getWindow();
+        window.close();
     }
 
 

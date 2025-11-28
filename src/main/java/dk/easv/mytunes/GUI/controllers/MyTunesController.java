@@ -13,10 +13,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -32,8 +30,6 @@ public class MyTunesController implements Initializable {
     private PlaylistModel pm;
     private SongModel sm;
 
-    private PlaylistViewController pc = new PlaylistViewController();
-    private SongViewController sc = new SongViewController();
 
     @FXML
     private TableView <Playlist> tblPlaylists;
@@ -43,6 +39,20 @@ public class MyTunesController implements Initializable {
 
     @FXML
     private ListView<Song> lstPlaylistSongs;
+    @FXML
+    private TableColumn<Playlist, String> colPlaylistName;
+    @FXML
+    private TableColumn<Playlist, String> colPlaylistSongs;
+    @FXML
+    private TableColumn<Playlist, String> colPlaylistTime;
+    @FXML
+    private TableColumn<Song, String> colSongTitle;
+    @FXML
+    private TableColumn<Song, String> colSongArtist;
+    @FXML
+    private TableColumn<Song, String> colSongCategory;
+    @FXML
+    private TableColumn<Song, String> colSongTime;
 
     public MyTunesController() {
 
@@ -54,6 +64,17 @@ public class MyTunesController implements Initializable {
         try {
             pm = new PlaylistModel();
             sm = new SongModel();
+
+
+            colPlaylistName.setCellValueFactory(new PropertyValueFactory<>("Name"));
+            //colPlaylistSongs.setCellValueFactory(new PropertyValueFactory<>("songs"));
+            //colPlaylistTime.setCellValueFactory(new PropertyValueFactory<>("length"));
+
+            colSongTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+            colSongArtist.setCellValueFactory(new PropertyValueFactory<>("artist"));
+            colSongCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
+            colSongTime.setCellValueFactory(new PropertyValueFactory<>("length"));
+
 
             //connect tableviews to filtered list
             tblSongs.setItems(sm.getFilteredList());
@@ -96,11 +117,12 @@ public class MyTunesController implements Initializable {
         }
     }
 
-    @FXML
-    private void onCreatePlaylist(ActionEvent actionEvent) throws IOException {
+    private void openPlaylistView() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/dk/easv/mytunes/PlaylistView.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         Stage stage = new Stage();
+        PlaylistViewController pvc = fxmlLoader.getController();
+        pvc.setModel(this.pm);
         stage.setTitle("Playlist View");
         stage.setScene(scene);
 
@@ -110,16 +132,13 @@ public class MyTunesController implements Initializable {
     }
 
     @FXML
-    private void onEditPlaylist(ActionEvent actionEvent) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/dk/easv/mytunes/PlaylistView.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
-        Stage stage = new Stage();
-        stage.setTitle("Playlist View");
-        stage.setScene(scene);
+    private void onCreatePlaylist(ActionEvent actionEvent) throws IOException {
+        openPlaylistView();
+    }
 
-        //Gør så du ikke kan åbne et til vindue før du har lukket det første du åbnede.
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.show();
+    @FXML
+    private void onEditPlaylist(ActionEvent actionEvent) throws IOException {
+        openPlaylistView();
     }
 
     @FXML
@@ -135,11 +154,12 @@ public class MyTunesController implements Initializable {
         }
     }
 
-    @FXML
-    private void onCreateSong(ActionEvent actionEvent) throws IOException {
+    private void openSongView() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/dk/easv/mytunes/SongView.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         Stage stage = new Stage();
+        SongViewController svc = fxmlLoader.getController();
+        svc.setModel(this.sm);
         stage.setTitle("Song View");
         stage.setScene(scene);
 
@@ -149,16 +169,13 @@ public class MyTunesController implements Initializable {
     }
 
     @FXML
-    private void onEditSong(ActionEvent actionEvent) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/dk/easv/mytunes/SongView.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
-        Stage stage = new Stage();
-        stage.setTitle("Song View");
-        stage.setScene(scene);
+    private void onCreateSong(ActionEvent actionEvent) throws IOException {
+        openSongView();
+    }
 
-        //Gør så du ikke kan åbne et til vindue før du har lukket det første du åbnede.
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.show();
+    @FXML
+    private void onEditSong(ActionEvent actionEvent) throws IOException {
+        openSongView();
     }
 
     @FXML

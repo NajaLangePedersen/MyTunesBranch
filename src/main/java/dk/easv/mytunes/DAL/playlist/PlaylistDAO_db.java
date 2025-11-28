@@ -1,22 +1,21 @@
 package dk.easv.mytunes.DAL.playlist;
-
+//project imports
 import dk.easv.mytunes.BE.Playlist;
 import dk.easv.mytunes.DAL.DBConnector;
-
+//java imports
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlaylistDAO_db implements IPlaylistDataAccess{
+public class PlaylistDAO_db implements IPlaylistDataAccess {
 
     private DBConnector databaseConnector;
 
-    public PlaylistDAO_db() throws IOException{
+    public PlaylistDAO_db() throws IOException {
         databaseConnector = new DBConnector();
     }
 
-    @Override
     public List<Playlist> getAllPlaylists() throws Exception {
         ArrayList<Playlist> allPlaylists = new ArrayList<>();
 
@@ -26,9 +25,11 @@ public class PlaylistDAO_db implements IPlaylistDataAccess{
             String sql = "SELECT * FROM dbo.Playlist";
 
             ResultSet rs = stmt.executeQuery(sql);
+
+            // Loop through the result set
             while (rs.next()) {
 
-                int id = rs.getInt("Id");
+                int id = rs.getInt("PlaylistId");
                 String name = rs.getString("Name");
 
                 Playlist playlist = new Playlist(id, name);
@@ -42,7 +43,6 @@ public class PlaylistDAO_db implements IPlaylistDataAccess{
         }
     }
 
-    @Override
     public Playlist createPlaylist(Playlist newPlaylist) throws Exception {
         // sql command
         String sql = "INSERT INTO dbo.Playlist (Name) VALUES (?);";
@@ -75,19 +75,19 @@ public class PlaylistDAO_db implements IPlaylistDataAccess{
             throw new Exception("Could not create newPlaylist", ex);
         }
 
-
     }
 
     @Override
     public void updatePlaylist(Playlist playlist) throws Exception {
         // sql commands
-        String sql = "UPDATE dbo.Playlist SET Name = ? WHERE ID = ?";
+        String sql = "UPDATE dbo.Playlist SET Name = ? WHERE PlaylistId = ?";
 
         try(Connection conn = databaseConnector.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql))
         {
             // bind parameters
             stmt.setString(1, playlist.getName());
+            stmt.setInt(2, playlist.getId());
 
             stmt.executeUpdate();
         }
@@ -103,7 +103,7 @@ public class PlaylistDAO_db implements IPlaylistDataAccess{
     public void deletePlaylist(Playlist playlist) throws Exception {
 
         // sql commands
-        String sql = "DELETE FROM dbo.Playlist WHERE ID = ?;";
+        String sql = "DELETE FROM dbo.Playlist WHERE PlaylistId = ?;";
         try(Connection conn = databaseConnector.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sql))
         {
@@ -115,7 +115,6 @@ public class PlaylistDAO_db implements IPlaylistDataAccess{
         {
             throw new Exception("Could not get Playlist from database", ex);
         }
-
 
     }
 }

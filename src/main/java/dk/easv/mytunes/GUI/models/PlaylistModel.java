@@ -1,7 +1,10 @@
 package dk.easv.mytunes.GUI.models;
 
+//project imports
 import dk.easv.mytunes.BE.Playlist;
 import dk.easv.mytunes.BLL.PlaylistManager;
+
+//javaFX imports
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -23,6 +26,7 @@ public class PlaylistModel {
     public FilteredList<Playlist> getFilteredList(){
         return filteredList;
     }
+
 
     public Playlist createPlaylist(Playlist newPlaylist) throws Exception {
         Playlist playlistCreated = pMan.createPlaylist(newPlaylist);

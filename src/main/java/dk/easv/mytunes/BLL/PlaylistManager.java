@@ -2,12 +2,10 @@ package dk.easv.mytunes.BLL;
 
 //project imports
 import dk.easv.mytunes.BE.Playlist;
-import dk.easv.mytunes.BE.Song;
 import dk.easv.mytunes.DAL.playlist.IPlaylistDataAccess;
 import dk.easv.mytunes.DAL.playlist.PlaylistDAO_db;
 
 //java imports
-import java.io.IOException;
 import java.util.List;
 
 public class PlaylistManager {
