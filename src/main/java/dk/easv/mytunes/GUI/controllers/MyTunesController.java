@@ -7,11 +7,14 @@ import dk.easv.mytunes.GUI.models.PlaylistModel;
 import dk.easv.mytunes.GUI.models.SongModel;
 
 //javaFX imports
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -21,6 +24,7 @@ import javafx.stage.Stage;
 //java imports
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class MyTunesController implements Initializable {
@@ -39,6 +43,7 @@ public class MyTunesController implements Initializable {
 
     @FXML
     private ListView<Song> lstPlaylistSongs;
+
     @FXML
     private TableColumn<Playlist, String> colPlaylistName;
     @FXML
@@ -54,6 +59,11 @@ public class MyTunesController implements Initializable {
     @FXML
     private TableColumn<Song, String> colSongTime;
 
+
+    @FXML
+    private Label lblPlaylistName;
+
+
     public MyTunesController() {
 
     }
@@ -65,7 +75,6 @@ public class MyTunesController implements Initializable {
             pm = new PlaylistModel();
             sm = new SongModel();
 
-
             colPlaylistName.setCellValueFactory(new PropertyValueFactory<>("Name"));
             //colPlaylistSongs.setCellValueFactory(new PropertyValueFactory<>("songs"));
             //colPlaylistTime.setCellValueFactory(new PropertyValueFactory<>("length"));
@@ -75,8 +84,7 @@ public class MyTunesController implements Initializable {
             colSongCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
             colSongTime.setCellValueFactory(new PropertyValueFactory<>("length"));
 
-
-            //connect tableviews to filtered list
+            //connect tableviews to filtered list / observableList
             tblSongs.setItems(sm.getFilteredList());
             tblPlaylists.setItems(pm.getFilteredList());
 
@@ -110,6 +118,8 @@ public class MyTunesController implements Initializable {
             SortedList<Playlist> sortedPlaylistData = new SortedList<>(pm.getFilteredList());
             sortedPlaylistData.comparatorProperty().bind(tblPlaylists.comparatorProperty());
             tblPlaylists.setItems(sortedPlaylistData);
+
+            onSelectedPlaylist();
 
         } catch (Exception e) {
             displayError(e);
@@ -202,11 +212,12 @@ public class MyTunesController implements Initializable {
 
     }
 
+
     @FXML
     private void onDeletePlaylistSong(ActionEvent actionEvent) {
         Playlist selectedPlaylist = tblPlaylists.getSelectionModel().getSelectedItem();
         Song selectedPlaylistSong = lstPlaylistSongs.getSelectionModel().getSelectedItem();
-        if (selectedPlaylist != null && selectedPlaylistSong != null ){
+        if (selectedPlaylist != null && selectedPlaylistSong != null ) {
             try{
                 sm.deleteSong(selectedPlaylistSong);
             }
@@ -219,13 +230,62 @@ public class MyTunesController implements Initializable {
 
     @FXML
     private void onBtnAddToPlaylist(ActionEvent actionEvent) {
+        Playlist selectedPlaylist = tblPlaylists.getSelectionModel().getSelectedItem();
+        Song selectedSong = tblSongs.getSelectionModel().getSelectedItem();
+        if (selectedPlaylist != null && selectedSong != null ){
+            try{
+                //Adds song to model
+                pm.addSongsToPlaylist(selectedPlaylist.getId(), selectedSong.getId());
 
-        //Song sele
+                List<Song> updatedSongs = pm.getSongsForPlaylist(selectedPlaylist.getId());
+                selectedPlaylist.setSongs(updatedSongs);
+
+                //selectedPlaylist.getSongs().add(selectedSong);
+
+                //lstPlaylistSongs.getItems().add(selectedSong);
+
+                lstPlaylistSongs.getItems().setAll(updatedSongs);
+
+            }
+            catch (Exception err) {
+                displayError(err);
+            }
+        }
+    }
+
+    private void onSelectedPlaylist() {
+        tblPlaylists.getSelectionModel().selectedItemProperty().addListener((obs,oldVal, newVal) -> {
+            if (newVal != null) {
+                try {
+                    List<Song> playlistSongs = pm.getSongsForPlaylist(newVal.getId());
+                    
+                    newVal.setSongs(playlistSongs);
+                    lstPlaylistSongs.getItems().setAll(playlistSongs);
+                } catch (Exception e) {
+                    displayError(e);
+                    //e.printStackTrace();
+                }
+                lblPlaylistName.setText(newVal.getName());
+            }
+        });
+
+        //initial selection
+        if (!tblPlaylists.getItems().isEmpty()) {
+            tblPlaylists.getSelectionModel().selectFirst();
+        }
+
     }
 
     private void displayError(Throwable t) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Something is wrong");
+    }
+
+    @FXML
+    private void onBtnClose(ActionEvent actionEvent) {
+        Node source = (Node) actionEvent.getSource();
+        Stage window = (Stage) source.getScene().getWindow();
+        window.close();
     }
 }
 

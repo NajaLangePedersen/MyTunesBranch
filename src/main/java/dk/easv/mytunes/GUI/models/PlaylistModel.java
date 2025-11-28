@@ -2,12 +2,15 @@ package dk.easv.mytunes.GUI.models;
 
 //project imports
 import dk.easv.mytunes.BE.Playlist;
+import dk.easv.mytunes.BE.Song;
 import dk.easv.mytunes.BLL.PlaylistManager;
 
 //javaFX imports
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+
+import java.util.List;
 
 public class PlaylistModel {
     private FilteredList<Playlist> filteredList;
@@ -48,5 +51,13 @@ public class PlaylistModel {
 
         playlistsToBeViewed.remove(playlist);
 
+    }
+
+    public List<Song> getSongsForPlaylist(int playlistId) throws Exception {
+        return pMan.getSongsForPlaylist(playlistId);
+    }
+
+    public void addSongsToPlaylist(int playlistId, int songId) throws Exception {
+        pMan.addSongsToPlaylist(playlistId, songId);
     }
 }

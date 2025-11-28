@@ -1,8 +1,12 @@
 package dk.easv.mytunes.BE;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Playlist {
     private int id;
     private String name;
+    private List<Song> playlistSongs = new ArrayList<>();
 
     public Playlist(int id, String name){
         this.id = id;
@@ -24,4 +28,13 @@ public class Playlist {
     public void setName(String name) {
         this.name = name;
     }
+
+    public List<Song> getSongs(){
+        return playlistSongs;
+    }
+
+    public void setSongs(List<Song> playlistSongs){
+        this.playlistSongs = playlistSongs;
+    }
+
 }

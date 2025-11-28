@@ -2,8 +2,10 @@ package dk.easv.mytunes.BLL;
 
 //project imports
 import dk.easv.mytunes.BE.Playlist;
+import dk.easv.mytunes.BE.Song;
 import dk.easv.mytunes.DAL.playlist.IPlaylistDataAccess;
 import dk.easv.mytunes.DAL.playlist.PlaylistDAO_db;
+import javafx.collections.ObservableList;
 
 //java imports
 import java.util.List;
@@ -31,5 +33,17 @@ public class PlaylistManager {
 
     public void deletePlaylist(Playlist playlist) throws Exception {
         playlistDAO.deletePlaylist(playlist);
+    }
+
+    public List<Song> getSongsForPlaylist(int playlistId) throws Exception {
+        return playlistDAO.getSongsForPlaylist(playlistId);
+    }
+
+    public Playlist getPlaylist(int playlistId) throws Exception {
+        return playlistDAO.getPlaylist(playlistId);
+    }
+
+    public void addSongsToPlaylist(int playlistId, int songId) throws Exception {
+        playlistDAO.addSongsToPlaylist(playlistId, songId);
     }
 }

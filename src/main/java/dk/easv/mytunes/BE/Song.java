@@ -55,4 +55,8 @@ public class Song {
     public void setCategory(String category) {
         this.category = category;
     }
+
+    public String toString(){
+        return title + " - " + artist;
+    }
 }

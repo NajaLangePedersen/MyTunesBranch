@@ -1,7 +1,9 @@
 package dk.easv.mytunes.DAL.playlist;
 //project imports
 import dk.easv.mytunes.BE.Playlist;
+import dk.easv.mytunes.BE.Song;
 import dk.easv.mytunes.DAL.DBConnector;
+import javafx.collections.ObservableList;
 //java imports
 import java.io.IOException;
 import java.sql.*;
@@ -35,6 +37,12 @@ public class PlaylistDAO_db implements IPlaylistDataAccess {
                 Playlist playlist = new Playlist(id, name);
                 allPlaylists.add(playlist);
             }
+
+            for (Playlist p : allPlaylists) {
+                List<Song> playlistSongs = getSongsForPlaylist(p.getId());
+                p.setSongs(playlistSongs);
+            }
+
             return allPlaylists;
         }
         catch (SQLException ex) {
@@ -114,6 +122,82 @@ public class PlaylistDAO_db implements IPlaylistDataAccess {
         catch (SQLException ex)
         {
             throw new Exception("Could not get Playlist from database", ex);
+        }
+
+    }
+
+    @Override
+    public List<Song> getSongsForPlaylist(int playlistId) throws Exception {
+        List<Song> playlistSongs = new ArrayList<>();
+
+        String sql = "SELECT * FROM Songs JOIN PlaylistSongs ON Songs.SongId = PlaylistSongs.SongId WHERE PlaylistSongs.PlaylistId = ?;";
+
+        try (Connection conn = databaseConnector.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, playlistId);
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Song song = new Song(
+                        rs.getInt("SongId"),
+                        rs.getString("Artist"),
+                        rs.getString("Title"),
+                        rs.getDouble("Length"),
+                        rs.getString("Category")
+                );
+                playlistSongs.add(song);
+            }
+
+        } catch (SQLException ex) {
+            throw new Exception("Could not get songs from database", ex);
+        }
+
+        return playlistSongs;
+    }
+
+    @Override
+    public Playlist getPlaylist(int playlistId) throws Exception {
+        Playlist playlist = null;
+
+        String sql = "SELECT * FROM Playlist WHERE PlaylistId = ?;";
+
+        try (Connection conn = databaseConnector.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, playlistId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                playlist = new Playlist(
+                        rs.getInt("PlaylistId"),
+                        rs.getString("Name")
+                );
+
+                List<Song> songs = getSongsForPlaylist(playlistId);
+                playlist.setSongs(songs);
+            }
+
+        } catch (SQLException ex) {
+            throw new Exception("Could not get playlist from database", ex);
+        }
+        return playlist;
+    }
+
+    @Override
+    public void addSongsToPlaylist(int playlistId, int songId) throws Exception{
+        String sql = "INSERT INTO PlayListSongs (playlistId, songId) VALUES (?, ?);";
+        try(Connection conn = databaseConnector.getConnection();
+            PreparedStatement stmt = databaseConnector.getConnection().prepareStatement(sql)) {
+
+            stmt.setInt(1, playlistId);
+            stmt.setInt(2, songId);
+
+            stmt.executeUpdate();
+        }
+        catch (SQLException ex){
+            throw new Exception("Could not add song to playlist", ex);
         }
 
     }

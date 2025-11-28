@@ -10,6 +10,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 
+import java.security.spec.ECField;
+import java.util.ArrayList;
+
 public class SongModel {
 
     private FilteredList<Song> filteredList;
@@ -50,4 +53,5 @@ public class SongModel {
 
         songsToBeViewed.remove(song);
     }
+
 }

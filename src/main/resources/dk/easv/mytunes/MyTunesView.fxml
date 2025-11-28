@@ -72,10 +72,19 @@
                 <padding>
                     <Insets bottom="10" left="10" right="10" top="10" />
                 </padding>
-                <Label style="-fx-font-weight: bold;" text="Songs on Playlist" />
+            <HBox prefHeight="30.0" prefWidth="253.0">
+               <children>
+                      <Label style="-fx-font-weight: bold;" text="Songs on Playlist" />
+                  <Label fx:id="lblPlaylistName">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </Label>
+               </children>
+            </HBox>
                 <HBox alignment="TOP_RIGHT" prefHeight="502.0" prefWidth="277.0">
                     <children>
-                        <ListView fx:id="lstPlaylistSongs" prefHeight="502.0" prefWidth="220.0" />
+                  <ListView fx:id="lstPlaylistSongs" prefHeight="200.0" prefWidth="200.0" />
                         <Button mnemonicParsing="false" onAction="#onBtnAddToPlaylist" prefHeight="26.0" prefWidth="31.0" text="⭠" />
                     </children>
                 </HBox>
@@ -132,7 +141,7 @@
                 </HBox>
                 <HBox alignment="CENTER_RIGHT" prefHeight="46.0" prefWidth="299.0">
                     <children>
-                        <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefHeight="30.0" prefWidth="61.0" text="Close" />
+                        <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#onBtnClose" prefHeight="30.0" prefWidth="61.0" text="Close" />
                     </children>
                 </HBox>
             </children>
