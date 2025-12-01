@@ -3,6 +3,7 @@ package dk.easv.mytunes.GUI.controllers;
 //project imports
 import dk.easv.mytunes.BE.Playlist;
 import dk.easv.mytunes.BE.Song;
+import dk.easv.mytunes.BLL.SongManager;
 import dk.easv.mytunes.GUI.models.PlaylistModel;
 import dk.easv.mytunes.GUI.models.SongModel;
 
@@ -18,10 +19,13 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 //java imports
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -33,6 +37,8 @@ public class MyTunesController implements Initializable {
 
     private PlaylistModel pm;
     private SongModel sm;
+
+    private MediaPlayer mp;
 
 
     @FXML
@@ -154,7 +160,7 @@ public class MyTunesController implements Initializable {
     @FXML
     private void onDeletePlaylist(ActionEvent actionEvent) throws IOException {
         Playlist selectedPlaylist = tblPlaylists.getSelectionModel().getSelectedItem();
-        if (selectedPlaylist != null){
+        if (selectedPlaylist != null) {
             try{
                 pm.deletePlaylist(selectedPlaylist);
             }
@@ -219,7 +225,7 @@ public class MyTunesController implements Initializable {
         Song selectedPlaylistSong = lstPlaylistSongs.getSelectionModel().getSelectedItem();
         if (selectedPlaylist != null && selectedPlaylistSong != null ) {
             try{
-                sm.deleteSong(selectedPlaylistSong);
+                pm.deleteSong(selectedPlaylist.getId(), selectedPlaylistSong.getId());
             }
             catch (Exception err) {
                 displayError(err);
@@ -240,10 +246,6 @@ public class MyTunesController implements Initializable {
                 List<Song> updatedSongs = pm.getSongsForPlaylist(selectedPlaylist.getId());
                 selectedPlaylist.setSongs(updatedSongs);
 
-                //selectedPlaylist.getSongs().add(selectedSong);
-
-                //lstPlaylistSongs.getItems().add(selectedSong);
-
                 lstPlaylistSongs.getItems().setAll(updatedSongs);
 
             }
@@ -258,7 +260,7 @@ public class MyTunesController implements Initializable {
             if (newVal != null) {
                 try {
                     List<Song> playlistSongs = pm.getSongsForPlaylist(newVal.getId());
-                    
+
                     newVal.setSongs(playlistSongs);
                     lstPlaylistSongs.getItems().setAll(playlistSongs);
                 } catch (Exception e) {
@@ -287,6 +289,49 @@ public class MyTunesController implements Initializable {
         Stage window = (Stage) source.getScene().getWindow();
         window.close();
     }
-}
 
+    @FXML
+    private void onBtnPlay(ActionEvent actionEvent) {
+        //play song from tblSongs
+        Song selectedSong = tblSongs.getSelectionModel().getSelectedItem();
+        Song selectedPlaylistSong = lstPlaylistSongs.getSelectionModel().getSelectedItem();
+
+        if(selectedSong != null) {
+            playSong(selectedSong);
+        } else if (selectedPlaylistSong != null) {
+            playSong(selectedPlaylistSong);
+        }
+    }
+
+    private void playSong(Song song) {
+        try {
+            if (song.getFilePath() == null){
+                return;
+            }
+
+            Media media = new Media((song.getFilePath().toUri()).toString());
+            if (mp != null) {
+                mp.stop();
+            }
+            mp = new MediaPlayer(media);
+            mp.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void onPrevious(ActionEvent actionEvent) {
+        Song prev = sm.previousSong();
+        playSong(prev);
+
+    }
+
+
+    @FXML
+    private void onNext(ActionEvent actionEvent) {
+        Song next = sm.nextSong();
+        playSong(next);
+    }
+}
 

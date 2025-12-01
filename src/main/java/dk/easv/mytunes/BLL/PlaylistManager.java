@@ -46,4 +46,8 @@ public class PlaylistManager {
     public void addSongsToPlaylist(int playlistId, int songId) throws Exception {
         playlistDAO.addSongsToPlaylist(playlistId, songId);
     }
+
+    public void deleteSongFromPlaylist(int playlistId, int songId) throws Exception {
+        playlistDAO.deleteSongFromPlaylist(playlistId, songId);
+    }
 }

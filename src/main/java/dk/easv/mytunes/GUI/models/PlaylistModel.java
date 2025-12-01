@@ -60,4 +60,8 @@ public class PlaylistModel {
     public void addSongsToPlaylist(int playlistId, int songId) throws Exception {
         pMan.addSongsToPlaylist(playlistId, songId);
     }
+
+    public void deleteSong(int playlistId, int songId) throws Exception {
+        pMan.deleteSongFromPlaylist(playlistId, songId);
+    }
 }

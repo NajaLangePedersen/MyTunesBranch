@@ -53,5 +53,15 @@ public class SongModel {
 
         songsToBeViewed.remove(song);
     }
+    public Song getCurrentSong() {
+        return sMan.getCurrrentSong();
+    }
+
+    public Song nextSong(){
+        return sMan.nextSong();
+    }
+    public Song previousSong() {
+        return sMan.previousSong();
+    }
 
 }

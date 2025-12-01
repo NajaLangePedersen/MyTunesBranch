@@ -27,9 +27,9 @@
                 </padding>
                 <HBox alignment="CENTER_LEFT" prefHeight="83.0" prefWidth="684.0">
                     <children>
-                        <Button text="⏮" />
-                        <Button text="⏯" />
-                        <Button text="⏭" />
+                        <Button onAction="#onPrevious" text="⏮" />
+                        <Button fx:id="btnPlay" onAction="#onBtnPlay" text="⏯" />
+                        <Button onAction="#onNext" text="⏭" />
                         <Slider prefWidth="150" />
                     </children>
                 </HBox>

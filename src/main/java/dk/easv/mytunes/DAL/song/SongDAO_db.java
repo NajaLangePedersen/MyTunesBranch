@@ -4,6 +4,8 @@ import dk.easv.mytunes.BE.Song;
 import dk.easv.mytunes.DAL.DBConnector;
 // java imports
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,9 @@ public class SongDAO_db implements ISongDataAccess{
             // Loop through rows from the database result set
             while (rs.next()) {
 
+                String filePathStr = rs.getString("FilePath");
+                Path filePath = (filePathStr != null && !filePathStr.isEmpty()) ? Paths.get(filePathStr) : null;
+
                 //Map Database row to Song object
                 int id = rs.getInt("SongId");
                 String title = rs.getString("Title");
@@ -34,7 +39,8 @@ public class SongDAO_db implements ISongDataAccess{
                 double length = rs.getDouble("Length");
                 String category = rs.getString("Category");
 
-                Song song = new Song(id, title, artist, length, category);
+
+                Song song = new Song(id, title, artist, length, category, filePath);
                 allSongs.add(song);
             }
             return allSongs;
@@ -48,7 +54,7 @@ public class SongDAO_db implements ISongDataAccess{
     }
 
     public Song createSong(Song newSong) throws Exception {
-        String sql = "INSERT INTO dbo.Songs (title, artist, length, category) VALUES (?,?,?,?);";
+        String sql = "INSERT INTO dbo.Songs (title, artist, length, category, filePath) VALUES (?,?,?,?,?);";
 
         try (Connection conn = databaseConnector.getConnection()) {
             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -58,6 +64,7 @@ public class SongDAO_db implements ISongDataAccess{
             stmt.setString(2, newSong.getArtist());
             stmt.setDouble(3, newSong.getLength());
             stmt.setString(4, newSong.getCategory());
+            stmt.setString(5, newSong.getFilePath().toString());
 
             //Run the SQL statement
             stmt.executeUpdate();
@@ -71,7 +78,7 @@ public class SongDAO_db implements ISongDataAccess{
             }
 
             //Create song object and send up layers
-            Song createdSong = new Song(id, newSong.getTitle(), newSong.getArtist(), newSong.getLength(), newSong.getCategory());
+            Song createdSong = new Song(id, newSong.getTitle(), newSong.getArtist(), newSong.getLength(), newSong.getCategory(), newSong.getFilePath());
 
             return createdSong;
         } catch (SQLException e) {
@@ -84,7 +91,7 @@ public class SongDAO_db implements ISongDataAccess{
     public void updateSong(Song song) throws Exception {
 
         //sql command
-        String sql = "UPDATE dbo.Songs SET Title = ?, Artist = ?, Length = ?, Category = ? WHERE SongId = ?";
+        String sql = "UPDATE dbo.Songs SET Title = ?, Artist = ?, Length = ?, Category = ?, FilePath = ? WHERE SongId = ?";
 
         try(Connection conn = databaseConnector.getConnection();
             PreparedStatement   stmt = conn.prepareStatement(sql))
@@ -94,6 +101,7 @@ public class SongDAO_db implements ISongDataAccess{
             stmt.setString(2, song.getArtist());
             stmt.setDouble(3, song.getLength());
             stmt.setString(4, song.getCategory());
+            stmt.setString(5, song.getFilePath().toString());
 
             //Run the sql statement
             stmt.executeUpdate();

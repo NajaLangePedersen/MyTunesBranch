@@ -6,6 +6,8 @@ import dk.easv.mytunes.DAL.DBConnector;
 import javafx.collections.ObservableList;
 //java imports
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -139,12 +141,17 @@ public class PlaylistDAO_db implements IPlaylistDataAccess {
 
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
+
+                String filePathStr = rs.getString("FilePath");
+                Path filePath = (filePathStr != null && !filePathStr.isEmpty()) ? Paths.get(filePathStr) : null;
+
                 Song song = new Song(
                         rs.getInt("SongId"),
                         rs.getString("Artist"),
                         rs.getString("Title"),
                         rs.getDouble("Length"),
-                        rs.getString("Category")
+                        rs.getString("Category"),
+                        filePath
                 );
                 playlistSongs.add(song);
             }
@@ -200,5 +207,20 @@ public class PlaylistDAO_db implements IPlaylistDataAccess {
             throw new Exception("Could not add song to playlist", ex);
         }
 
+    }
+
+    public void deleteSongFromPlaylist(int playlistId, int songId) throws Exception{
+        String sql = "DELETE FROM PlaylistSongs WHERE PlaylistId = ? AND SongId = ?;";
+        try(Connection conn = databaseConnector.getConnection();
+            PreparedStatement stmt = databaseConnector.getConnection().prepareStatement(sql)) {
+
+            stmt.setInt(1, playlistId);
+            stmt.setInt(2, songId);
+
+            stmt.executeUpdate();
+        }
+        catch (SQLException ex){
+            throw new Exception("Could not delete song from playlist", ex);
+        }
     }
 }

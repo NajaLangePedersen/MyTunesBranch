@@ -1,5 +1,6 @@
 package dk.easv.mytunes.BE;
 
+import java.nio.file.Path;
 
 public class Song {
     private int id;
@@ -7,13 +8,15 @@ public class Song {
     private String artist;
     private double length;
     private String category;
+    private Path filePath;
 
-    public Song(int id, String title, String artist, double length, String category) {
+    public Song(int id, String title, String artist, double length, String category, Path filePath) {
         this.id = id;
         this.title = title;
         this.artist = artist;
         this.length = length;
         this.category = category;
+        this.filePath = filePath;
     }
 
     public int getId() {
@@ -58,5 +61,13 @@ public class Song {
 
     public String toString(){
         return title + " - " + artist;
+    }
+
+    public Path getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(Path filePath) {
+        this.filePath = filePath;
     }
 }

@@ -12,6 +12,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+import javafx.scene.media.Media;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -19,6 +20,8 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
 public class SongViewController implements Initializable {
@@ -56,12 +59,13 @@ public class SongViewController implements Initializable {
         String artist = txtArtist.getText();
         double length = Double.parseDouble(txtTime.getText());
         String category = comboBoxGenre.getSelectionModel().getSelectedItem();
+        Path filePath = Paths.get(selectedFile.getPath());
 
         if(selectedFile == null){
             displayError(new Exception("No file selected"));
         }
 
-        Song newSong = new Song(-1, title, artist, length, category);
+        Song newSong = new Song(-1, title, artist, length, category, filePath);
 
         try {
             sm.createSong(newSong);

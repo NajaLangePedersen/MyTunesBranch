@@ -22,4 +22,6 @@ public interface IPlaylistDataAccess {
     List<Song> getSongsForPlaylist(int playlistId) throws Exception;
 
     Playlist getPlaylist(int playlistId) throws Exception;
+
+    void deleteSongFromPlaylist(int playlistId, int songId) throws Exception;
 }
