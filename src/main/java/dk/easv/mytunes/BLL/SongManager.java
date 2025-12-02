@@ -1,6 +1,7 @@
 
 package dk.easv.mytunes.BLL;
 //Project imports
+import dk.easv.mytunes.BE.Playlist;
 import dk.easv.mytunes.DAL.song.ISongDataAccess;
 import dk.easv.mytunes.DAL.song.SongDAO_db;
 import dk.easv.mytunes.BE.Song;
@@ -9,6 +10,7 @@ import java.util.List;
 
 public class SongManager {
     private List<Song> songs;
+    private List<Song> currentPlaylist;
     private int currentSongId = 0;
     private ISongDataAccess songDao;
 
@@ -33,25 +35,51 @@ public class SongManager {
     public void deleteSong(Song song) throws Exception{
         songDao.deleteSong(song);
     }
+
+    public void setCurrentPlaylist(List<Song> playlistSongs) {
+        this.currentPlaylist = playlistSongs;
+        this.currentSongId = 0;
+    }
+
+
     public Song getCurrrentSong(){
+        if(currentPlaylist != null && !currentPlaylist.isEmpty()) {
+            return songs.get(currentSongId);
+        }
         return songs.get(currentSongId);
-    }
-
-    public Song nextSong(){
-        currentSongId++;
-        if (currentSongId >= songs.size()){
-            currentSongId = 0;
-        }
-        return getCurrrentSong();
 
     }
 
-    public Song previousSong(){
-        currentSongId--;
-        if(currentSongId <= 0) {
-            currentSongId = songs.size() - 1;
+    public Song nextSong() {
+        if (currentPlaylist != null && !currentPlaylist.isEmpty()) {
+            currentSongId++;
+            if (currentSongId >= currentPlaylist.size()) {
+                currentSongId = 0;
+            }
+            return getCurrrentSong();
+        } else {
+            currentSongId++;
+            if (currentSongId >= songs.size()) {
+                currentSongId = 0;
+            }
+            return getCurrrentSong();
         }
-        return getCurrrentSong();
+    }
+
+    public Song previousSong() {
+        if (currentPlaylist != null && !currentPlaylist.isEmpty()) {
+            currentSongId--;
+            if (currentSongId < 0) {
+                currentSongId = currentPlaylist.size() - 1;
+            }
+            return getCurrrentSong();
+        } else {
+            currentSongId--;
+            if (currentSongId < 0) {
+                currentSongId = songs.size() - 1;
+            }
+            return getCurrrentSong();
+        }
     }
 
 }

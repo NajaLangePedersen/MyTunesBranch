@@ -113,15 +113,27 @@ public class PlaylistDAO_db implements IPlaylistDataAccess {
     public void deletePlaylist(Playlist playlist) throws Exception {
 
         // sql commands
-        String sql = "DELETE FROM dbo.Playlist WHERE PlaylistId = ?;";
-        try(Connection conn = databaseConnector.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql))
-        {
-            stmt.setInt(1, playlist.getId());
+        String deleteSongsSql = "DELETE FROM PlaylistSongs WHERE PlaylistId = ?;";
+        String deletePlaylistSql = "DELETE FROM dbo.Playlist WHERE PlaylistId = ?;";
 
-            stmt.executeUpdate();
-        }
-        catch (SQLException ex)
+        try (Connection conn = databaseConnector.getConnection()) {
+
+            //use same connection for both statements (it only commits if both succeed)
+            conn.setAutoCommit(false);
+
+            //first delete all songs from playlist
+            try (PreparedStatement stmtSongs = conn.prepareStatement(deleteSongsSql)) {
+                stmtSongs.setInt(1, playlist.getId());
+                stmtSongs.executeUpdate();
+            }
+            //then delete playlist
+            try (PreparedStatement stmtPlaylist = conn.prepareStatement(deletePlaylistSql)) {
+                stmtPlaylist.setInt(1, playlist.getId());
+                stmtPlaylist.executeUpdate();
+            }
+            //if all succeed
+            conn.commit();
+        } catch (SQLException ex)
         {
             throw new Exception("Could not get Playlist from database", ex);
         }
@@ -132,7 +144,12 @@ public class PlaylistDAO_db implements IPlaylistDataAccess {
     public List<Song> getSongsForPlaylist(int playlistId) throws Exception {
         List<Song> playlistSongs = new ArrayList<>();
 
-        String sql = "SELECT * FROM Songs JOIN PlaylistSongs ON Songs.SongId = PlaylistSongs.SongId WHERE PlaylistSongs.PlaylistId = ?;";
+        //Selects all songs from playlist
+        String sql = "SELECT Songs.SongId, Songs.Artist, Songs.Title, Songs.Length, Songs.Category, Songs.FilePath " +
+                "FROM Songs " +
+                "JOIN PlaylistSongs ON Songs.SongId = PlaylistSongs.SongId " +
+                "WHERE PlaylistSongs.PlaylistId = ? " +
+                "ORDER BY PlaylistSongs.Position;";
 
         try (Connection conn = databaseConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -221,6 +238,32 @@ public class PlaylistDAO_db implements IPlaylistDataAccess {
         }
         catch (SQLException ex){
             throw new Exception("Could not delete song from playlist", ex);
+        }
+    }
+
+    @Override
+    public void updateSongOrder(int playlistId, List<Song> newOrder) {
+        String sql = "UPDATE PlaylistSongs SET Position = ? WHERE PlaylistId = ? AND SongId = ?";
+
+        try(Connection conn = databaseConnector.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)){
+
+            conn.setAutoCommit(false);
+            
+            int position = 1;
+            for (Song song : newOrder) {
+                stmt.setInt(1, position);
+                stmt.setInt(2, playlistId);
+                stmt.setInt(3, song.getId());
+                stmt.addBatch();
+                position++;
+            }
+            stmt.executeBatch();
+            conn.commit();
+            System.out.println("database updated successfully");
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

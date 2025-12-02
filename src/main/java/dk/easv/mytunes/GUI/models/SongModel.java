@@ -12,6 +12,7 @@ import javafx.collections.transformation.FilteredList;
 
 import java.security.spec.ECField;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SongModel {
 
@@ -53,6 +54,11 @@ public class SongModel {
 
         songsToBeViewed.remove(song);
     }
+
+    public void setActivePlaylist(List<Song> playlistSongs) {
+        sMan.setCurrentPlaylist(playlistSongs);
+    }
+
     public Song getCurrentSong() {
         return sMan.getCurrrentSong();
     }

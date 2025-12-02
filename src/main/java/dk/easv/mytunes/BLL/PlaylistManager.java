@@ -50,4 +50,8 @@ public class PlaylistManager {
     public void deleteSongFromPlaylist(int playlistId, int songId) throws Exception {
         playlistDAO.deleteSongFromPlaylist(playlistId, songId);
     }
+
+    public void updateSongOrder(int playlistId, List<Song> newOrder) {
+        playlistDAO.updateSongOrder(playlistId, newOrder);
+    }
 }

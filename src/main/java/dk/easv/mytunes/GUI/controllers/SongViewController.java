@@ -13,8 +13,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 //java imports
 import java.io.File;
@@ -57,7 +59,21 @@ public class SongViewController implements Initializable {
     private void onBtnSave(ActionEvent actionEvent){
         String title = txtTitle.getText();
         String artist = txtArtist.getText();
-        double length = Double.parseDouble(txtTime.getText());
+
+        //lav minutter og sekunder om til en double
+        String time = txtTime.getText();
+        double length = 0;
+        try {
+            String[] timeParts = time.split(":");
+            int minutes = Integer.parseInt(timeParts[0]);
+            int seconds = Integer.parseInt(timeParts[1]);
+
+            length = minutes + seconds / 60.0; //laver længden om til decimal-minutter
+        } catch (Exception e) {
+            displayError(new Exception("Invalid time format"));
+            return;
+        }
+
         String category = comboBoxGenre.getSelectionModel().getSelectedItem();
         Path filePath = Paths.get(selectedFile.getPath());
 
@@ -92,8 +108,29 @@ public class SongViewController implements Initializable {
         selectedFile = fileChooser.showOpenDialog(stage);
 
         if(selectedFile != null) {
+
             txtFile.setText(selectedFile.getAbsolutePath());
+
+            //find length of file and display it in the time textfield
+            try {
+                Media media = new Media(selectedFile.toURI().toString());
+                MediaPlayer tempPlayer = new MediaPlayer(media); //need temporary mediaplayer to get length of song
+
+                //when media player is ready, display length of song
+                tempPlayer.setOnReady(() -> {
+                    Duration duration = media.getDuration();
+                    int minutes = (int) duration.toMinutes(); //total length of song in minutes
+                    int seconds = (int) (duration.toSeconds() % 60); //total length of song in seconds - but only what's left after diving with 60 (the minutes)
+
+                    txtTime.setText(String.format("%02d:%02d", minutes, seconds));
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                txtTime.setText("Error");
+            }
         }
+
+
 
     }
 

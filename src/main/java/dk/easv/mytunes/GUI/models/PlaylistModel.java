@@ -61,7 +61,11 @@ public class PlaylistModel {
         pMan.addSongsToPlaylist(playlistId, songId);
     }
 
-    public void deleteSong(int playlistId, int songId) throws Exception {
+    public void deleteSongFromPlaylist(int playlistId, int songId) throws Exception {
         pMan.deleteSongFromPlaylist(playlistId, songId);
+    }
+    
+    public void updateSongOrder(int playlistId, List<Song> newOrder) throws Exception{
+        pMan.updateSongOrder(playlistId, newOrder);
     }
 }
