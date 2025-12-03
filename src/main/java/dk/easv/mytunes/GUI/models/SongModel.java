@@ -70,4 +70,7 @@ public class SongModel {
         return sMan.previousSong();
     }
 
+    public String getMediaUriForSong(Song song) {
+        return sMan.getMediaUriForSong(song);
+    }
 }

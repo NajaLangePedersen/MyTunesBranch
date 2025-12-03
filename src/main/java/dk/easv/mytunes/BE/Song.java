@@ -77,4 +77,8 @@ public class Song {
     public String toString(){
         return title + " - " + artist;
     }
+
+    public boolean isInternalResource() {
+        return filePath != null && !filePath.isAbsolute();
+    }
 }

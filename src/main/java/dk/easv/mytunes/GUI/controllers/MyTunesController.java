@@ -8,6 +8,7 @@ import dk.easv.mytunes.GUI.models.PlaylistModel;
 import dk.easv.mytunes.GUI.models.SongModel;
 
 //javaFX imports
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
@@ -44,6 +45,10 @@ public class MyTunesController implements Initializable {
 
     private boolean isPaused = false;
 
+    private Song currentSong;
+
+    private ObservableList<Playlist> observablePlaylist = FXCollections.observableArrayList();
+
     @FXML
     private TableView <Playlist> tblPlaylists;
 
@@ -60,7 +65,7 @@ public class MyTunesController implements Initializable {
     @FXML
     private TableColumn<Playlist, String> colPlaylistTime;
     @FXML
-    private TableColumn<Playlist, String> colPlaylistSongs;
+    private TableColumn<Playlist, Integer> colPlaylistSongs;
     @FXML
     private TableColumn<Song, String> colSongTitle;
     @FXML
@@ -69,6 +74,8 @@ public class MyTunesController implements Initializable {
     private TableColumn<Song, String> colSongCategory;
     @FXML
     private TableColumn<Song, String> colSongTime;
+
+
 
     @FXML
     private Label lblPlaylistName;
@@ -91,8 +98,8 @@ public class MyTunesController implements Initializable {
             sm = new SongModel();
 
             colPlaylistName.setCellValueFactory(new PropertyValueFactory<>("Name"));
-            //colPlaylistSongs.setCellValueFactory(new PropertyValueFactory<>("Songs"));
-            //colPlaylistTime.setCellValueFactory(new PropertyValueFactory<>("length"));
+            colPlaylistSongs.setCellValueFactory(new PropertyValueFactory<>("nrOfSongs"));
+            colPlaylistTime.setCellValueFactory(new PropertyValueFactory<>("totalLength"));
 
             colSongTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
             colSongArtist.setCellValueFactory(new PropertyValueFactory<>("artist"));
@@ -102,6 +109,8 @@ public class MyTunesController implements Initializable {
             //connect tableviews to filtered list / observableList
             tblSongs.setItems(sm.getFilteredList());
             tblPlaylists.setItems(pm.getFilteredList());
+
+            tblPlaylists.setItems(observablePlaylist);
 
             lstPlaylistSongs.setItems(playlistSongObservable);
 
@@ -141,6 +150,8 @@ public class MyTunesController implements Initializable {
             volumeSlider.setMin(0.0); //mute
             volumeSlider.setMax(1);
             volumeSlider.setValue(0.5);
+
+            doubleClickHandlers();
 
         } catch (Exception e) {
             displayError(e);
@@ -205,8 +216,14 @@ public class MyTunesController implements Initializable {
     }
 
     @FXML
-    private void onEditSong(ActionEvent actionEvent) throws IOException {
-        openSongView();
+    private void onEditSong(ActionEvent actionEvent) throws IOException { /*
+        Song selectedSong = tblSongs.getSelectionModel().getSelectedItem();
+        if (selectedSong != null){
+            openSongView();
+
+        }
+        else openSongView(onBtnSave);
+*/
     }
 
     @FXML
@@ -271,6 +288,13 @@ public class MyTunesController implements Initializable {
             try{
                 pm.deleteSongFromPlaylist(selectedPlaylist.getId(), selectedPlaylistSong.getId());
                 playlistSongObservable.remove(selectedPlaylistSong);
+
+                List<Song> updatedSongs = pm.getSongsForPlaylist(selectedPlaylist.getId());
+                selectedPlaylist.setSongs(updatedSongs);
+
+                playlistSongObservable.setAll(updatedSongs);
+
+                tblPlaylists.refresh();
             }
             catch (Exception err) {
                 displayError(err);
@@ -292,6 +316,8 @@ public class MyTunesController implements Initializable {
                 selectedPlaylist.setSongs(updatedSongs);
 
                 playlistSongObservable.setAll(updatedSongs);
+
+                tblPlaylists.refresh();
 
             }
             catch (Exception err) {
@@ -343,25 +369,45 @@ public class MyTunesController implements Initializable {
         Song selectedSong = tblSongs.getSelectionModel().getSelectedItem();
         Song selectedPlaylistSong = lstPlaylistSongs.getSelectionModel().getSelectedItem();
 
+        //If selectedSong is not null, then songToPlay = selectedSong; otherwise, songToPlay = selectedPlaylistSong
+        //Song songToPlay = (selectedSong != null) ? selectedSong : selectedPlaylistSong;
+        Song songToPlay; if(selectedSong != null) {
+            songToPlay = selectedSong;
+        } else { songToPlay = selectedPlaylistSong; }
+
+        if(songToPlay == null) {
+            return;
+        }
+
         if(mp == null) {
-            if(selectedSong != null) {
-                playSong(selectedSong);
-            } else if (selectedPlaylistSong != null) {
-                playSong(selectedPlaylistSong);
-            }
+            playSong(songToPlay);
             btnPlay.setText("⏸");
             isPaused = false;
         }else if (!isPaused) {
-            mp.pause();
-            isPaused=true;
-            btnPlay.setText("▶");
+            if(!songToPlay.equals(currentSong)){
+                mp.stop();
+                playSong(songToPlay);
+                btnPlay.setText("⏸");
+                isPaused = false;
+            }
+            else{
+                mp.pause();
+                isPaused=true;
+                btnPlay.setText("▶");
+            }
         } else {
-            mp.play();
-            btnPlay.setText("⏸");
-            isPaused = false;
+            if (!songToPlay.equals(currentSong)) {
+                mp.stop();
+                playSong(songToPlay);
+            } else{
+                mp.play();
+                btnPlay.setText("⏸");
+                isPaused = false;
+            }
+
         }
     }
-
+/*
     private void playSong(Song song) {
         try {
             if (song.getFilePath() == null){
@@ -389,6 +435,41 @@ public class MyTunesController implements Initializable {
         }
 
     }
+    */
+
+
+    private void playSong(Song song) {
+        try {
+
+            String uri = sm.getMediaUriForSong(song); // via model, ikke direkte SongManager
+
+            System.out.println(uri);
+            if (uri == null) return;
+
+            if (mp != null) {
+                mp.stop();
+            }
+
+            Media media = new Media(uri);
+            System.out.println(media.getSource());
+            mp = new MediaPlayer(media);
+
+            mp.setOnEndOfMedia(() -> {
+                isPaused = false;
+                btnPlay.setText("▶");
+            });
+            // Binding our volume slider to the media player's volume property.
+            mp.volumeProperty().bind(volumeSlider.valueProperty());
+            mp.play();
+
+            currentSong = song;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     @FXML
     private void onPrevious(ActionEvent actionEvent) {
@@ -403,5 +484,33 @@ public class MyTunesController implements Initializable {
         Song next = sm.nextSong();
         playSong(next);
     }
+
+    private void doubleClickHandlers() {
+        tblSongs.setOnMouseClicked(event -> {
+            if (event.getClickCount() ==2) {
+                Song selectedSong = tblSongs.getSelectionModel().getSelectedItem();
+                if(selectedSong != null) {
+                    playSong(selectedSong);
+                    btnPlay.setText("⏸");
+                    isPaused = false;
+                    currentSong = selectedSong;
+                }
+            }
+        });
+
+        lstPlaylistSongs.setOnMouseClicked(event -> {
+            if(event.getClickCount() == 2) {
+                Song selectedPlaylistSong = lstPlaylistSongs.getSelectionModel().getSelectedItem();
+                if(selectedPlaylistSong != null) {
+                    playSong(selectedPlaylistSong);
+                    btnPlay.setText("⏸");
+                    isPaused = false;
+                    currentSong = selectedPlaylistSong;
+                }
+            }
+        });
+    }
+
+
 }
 

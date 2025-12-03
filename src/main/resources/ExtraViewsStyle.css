@@ -1,0 +1,23 @@
+.root {
+    -fx-background-color: #F2F2F2;
+}
+
+#btnCancel {
+    -fx-background-color: #D9674C;
+    -fx-background-radius: 10%;
+    -fx-border-width: 2px;
+    -fx-border-color: #A12F15;
+    -fx-border-radius: 10%;
+}
+
+.button {
+    -fx-background-color: #e6f2fa;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: #c1d9ea;
+    -fx-border-width: 1px;
+}
+
+.comboBox {
+
+}

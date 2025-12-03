@@ -8,50 +8,78 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="245.0" prefWidth="334.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dk.easv.mytunes.GUI.controllers.SongViewController">
+<AnchorPane prefHeight="245.0" prefWidth="334.0" stylesheets="@../../../ExtraViewsStyle.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dk.easv.mytunes.GUI.controllers.SongViewController">
     <children>
-        <VBox layoutX="20" layoutY="20" spacing="10">
+        <VBox layoutY="20" prefHeight="231.0" prefWidth="337.0" spacing="10">
             <padding>
                 <Insets bottom="10" left="10" right="10" top="10" />
             </padding>
 
             <!-- Title -->
             <HBox spacing="10">
-                <Label prefHeight="17.0" prefWidth="60.0" text="Title:" />
+                <Label minWidth="-Infinity" prefHeight="17.0" prefWidth="65.0" text="Title:" textFill="#78b9e3">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
                 <TextField fx:id="txtTitle" prefHeight="25.0" prefWidth="198.0" />
             </HBox>
 
             <!-- Artist -->
             <HBox spacing="10">
-                <Label prefHeight="17.0" prefWidth="60.0" text="Artist:" />
+                <Label prefHeight="17.0" prefWidth="65.0" text="Artist:" textFill="#78b9e3">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
                 <TextField fx:id="txtArtist" prefHeight="25.0" prefWidth="192.0" />
             </HBox>
 
             <!-- Category with ComboBox and More button -->
             <HBox spacing="10">
-                <Label prefHeight="17.0" prefWidth="60.0" text="Category:" />
+                <Label prefHeight="17.0" prefWidth="65.0" text="Category:" textFill="#78b9e3">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
                 <ComboBox fx:id="comboBoxGenre" prefHeight="25.0" prefWidth="70.0" />
-                <Button text="More..." />
+                <Button text="More...">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Button>
             </HBox>
 
             <!-- File with Choose button -->
             <HBox spacing="10">
-                <Label prefHeight="17.0" prefWidth="60.0" text="File:" />
+                <Label prefHeight="17.0" prefWidth="65.0" text="File:" textFill="#78b9e3">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
                 <TextField fx:id="txtFile" prefWidth="150" />
-                <Button onAction="#onBtnChooseFile" text="Choose..." />
+                <Button onAction="#onBtnChooseFile" text="Choose...">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Button>
             </HBox>
 
             <!-- Time -->
             <HBox spacing="10">
-                <Label prefHeight="17.0" prefWidth="60.0" text="Time:" />
+                <Label prefHeight="17.0" prefWidth="65.0" text="Time:" textFill="#78b9e3">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
                 <TextField fx:id="txtTime" blendMode="DARKEN" editable="false" prefWidth="100" />
             </HBox>
 
             <!-- Action buttons -->
             <HBox alignment="CENTER_RIGHT" spacing="10">
-                <Button onAction="#onBtnCancel" text="Cancel" />
-                <Button onAction="#onBtnSave" text="Save" />
+                <Button onAction="#onBtnSave" text="Save">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Button>
+                <Button id="btnCancel" onAction="#onBtnCancel" text="Cancel" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Button>
             </HBox>
         </VBox>
     </children>
