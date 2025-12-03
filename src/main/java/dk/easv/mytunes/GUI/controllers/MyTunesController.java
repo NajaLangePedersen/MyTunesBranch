@@ -375,68 +375,47 @@ public class MyTunesController implements Initializable {
             songToPlay = selectedSong;
         } else { songToPlay = selectedPlaylistSong; }
 
+        //if no song is selected, exit method
         if(songToPlay == null) {
             return;
         }
-
+        //if nothing is playing, start playing
         if(mp == null) {
             playSong(songToPlay);
             btnPlay.setText("⏸");
             isPaused = false;
-        }else if (!isPaused) {
+        }
+        //if something is playing, and it isn't paused
+        else if (!isPaused) {
+            //stop song and play new song, if the selected song isn't the currently playing song
             if(!songToPlay.equals(currentSong)){
                 mp.stop();
                 playSong(songToPlay);
                 btnPlay.setText("⏸");
                 isPaused = false;
             }
+            // pause if the selected song is the one playing
             else{
                 mp.pause();
                 isPaused=true;
                 btnPlay.setText("▶");
             }
-        } else {
+        }
+        //if the song is paused
+        else {
+            //play new song, if selected song isn't the one currently playing
             if (!songToPlay.equals(currentSong)) {
                 mp.stop();
                 playSong(songToPlay);
-            } else{
+            }
+            //unpause current song
+            else{
                 mp.play();
-                btnPlay.setText("⏸");
-                isPaused = false;
             }
-
+            btnPlay.setText("⏸");
+            isPaused = false;
         }
     }
-/*
-    private void playSong(Song song) {
-        try {
-            if (song.getFilePath() == null){
-                return;
-            }
-
-            Media media = new Media((song.getFilePath().toUri()).toString());
-
-            if (mp != null) {
-                mp.stop();
-            }
-
-            mp = new MediaPlayer(media);
-
-            mp.setOnEndOfMedia(() -> {
-                isPaused = false;
-                btnPlay.setText("▶");
-            });
-
-            // Binding our volume slider to the media player's volume property.
-            mp.volumeProperty().bind(volumeSlider.valueProperty());
-            mp.play();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-    */
-
 
     private void playSong(Song song) {
         try {

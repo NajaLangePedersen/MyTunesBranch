@@ -1,15 +1,11 @@
 
 package dk.easv.mytunes.BLL;
 //Project imports
-import dk.easv.mytunes.BE.Playlist;
 import dk.easv.mytunes.DAL.song.ISongDataAccess;
 import dk.easv.mytunes.DAL.song.SongDAO_db;
 import dk.easv.mytunes.BE.Song;
 //java imports
-import javafx.scene.media.Media;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 public class SongManager {
@@ -95,26 +91,4 @@ public class SongManager {
             return song.getFilePath().toUri().toString();
         }
     }
-
-    /*public String getMediaUriForSong(Song song) {
-        try {
-            Path filePath;
-
-            if (song.isInternalResource()) {
-                filePath = Path.of("audio", String.valueOf(song.getFilePath().getFileName()));
-            } else {
-                filePath = song.getFilePath();
-            }
-
-            if (!Files.exists(filePath)) {
-                System.err.println("Filen findes ikke: " + filePath);
-                return null;
-            }
-            return filePath.toUri().toString();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-    }*/
 }
