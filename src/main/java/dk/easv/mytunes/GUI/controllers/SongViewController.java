@@ -88,6 +88,10 @@ public class SongViewController implements Initializable {
         } catch (Exception e) {
             displayError(e);
         }
+
+        Node source = (Node) actionEvent.getSource();
+        Stage window = (Stage) source.getScene().getWindow();
+        window.close();
     }
 
     @FXML
@@ -122,7 +126,7 @@ public class SongViewController implements Initializable {
                     int minutes = (int) duration.toMinutes(); //total length of song in minutes
                     int seconds = (int) (duration.toSeconds() % 60); //total length of song in seconds - but only what's left after diving with 60 (the minutes)
 
-                    txtTime.setText(String.format("%02d:%02d", minutes, seconds));
+                    txtTime.setText(String.format("%02d:%02d", minutes, seconds)); //% = format specifier, 02 = min 2 cifre, fill with 0 in front if necessary, d = whole number
                 });
             } catch (Exception e) {
                 e.printStackTrace();

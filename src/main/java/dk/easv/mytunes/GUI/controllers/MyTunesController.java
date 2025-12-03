@@ -60,6 +60,8 @@ public class MyTunesController implements Initializable {
     @FXML
     private TableColumn<Playlist, String> colPlaylistTime;
     @FXML
+    private TableColumn<Playlist, String> colPlaylistSongs;
+    @FXML
     private TableColumn<Song, String> colSongTitle;
     @FXML
     private TableColumn<Song, String> colSongArtist;
@@ -89,12 +91,13 @@ public class MyTunesController implements Initializable {
             sm = new SongModel();
 
             colPlaylistName.setCellValueFactory(new PropertyValueFactory<>("Name"));
+            //colPlaylistSongs.setCellValueFactory(new PropertyValueFactory<>("Songs"));
             //colPlaylistTime.setCellValueFactory(new PropertyValueFactory<>("length"));
 
             colSongTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
             colSongArtist.setCellValueFactory(new PropertyValueFactory<>("artist"));
             colSongCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
-            colSongTime.setCellValueFactory(new PropertyValueFactory<>("length"));
+            colSongTime.setCellValueFactory(new PropertyValueFactory<>("lengthString"));
 
             //connect tableviews to filtered list / observableList
             tblSongs.setItems(sm.getFilteredList());

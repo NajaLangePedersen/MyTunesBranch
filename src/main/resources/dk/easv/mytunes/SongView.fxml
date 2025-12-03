@@ -35,17 +35,17 @@
                 <Button text="More..." />
             </HBox>
 
-            <!-- Time -->
-            <HBox spacing="10">
-                <Label prefHeight="17.0" prefWidth="60.0" text="Time:" />
-                <TextField fx:id="txtTime" prefWidth="100" />
-            </HBox>
-
             <!-- File with Choose button -->
             <HBox spacing="10">
                 <Label prefHeight="17.0" prefWidth="60.0" text="File:" />
                 <TextField fx:id="txtFile" prefWidth="150" />
                 <Button onAction="#onBtnChooseFile" text="Choose..." />
+            </HBox>
+
+            <!-- Time -->
+            <HBox spacing="10">
+                <Label prefHeight="17.0" prefWidth="60.0" text="Time:" />
+                <TextField fx:id="txtTime" blendMode="DARKEN" editable="false" prefWidth="100" />
             </HBox>
 
             <!-- Action buttons -->

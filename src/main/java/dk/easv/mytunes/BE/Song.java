@@ -47,6 +47,13 @@ public class Song {
         return length;
     }
 
+    public String getLengthString() {
+        int minutes = (int) length; //int converts the number to a whole number - only the minute part of the decimal-minutes
+        int seconds = (int) Math.round((length - minutes)*60); //subtracts the minute int from the whole decimal-minutes number - leaving only the decimal part of a minute. Then * 60 to make it into seconds instead of parts of a decimal-minute. Math.round rounds up in comparison to just int typecating which rounds down.
+
+        return String.format("%02d:%02d", minutes, seconds); //% = format specifier, 02 = min 2 cifre, fill with 0 in front if necessary, d = whole number
+    }
+
     public void setLength(){
         this.length = length;
     }
@@ -59,15 +66,15 @@ public class Song {
         this.category = category;
     }
 
-    public String toString(){
-        return title + " - " + artist;
-    }
-
     public Path getFilePath() {
         return filePath;
     }
 
     public void setFilePath(Path filePath) {
         this.filePath = filePath;
+    }
+
+    public String toString(){
+        return title + " - " + artist;
     }
 }
