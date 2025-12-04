@@ -20,6 +20,7 @@ public class PlaylistViewController{
     private TextField txtName;
 
 
+
     public PlaylistViewController(){
 
     }
@@ -51,6 +52,11 @@ public class PlaylistViewController{
 
         }
     }
+
+    public void setPlaylistName(String playlistName) {
+        txtName.setText(playlistName);
+    }
+
 
     @FXML
     private void onBtnCancel(ActionEvent actionEvent){

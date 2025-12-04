@@ -22,13 +22,17 @@ import javafx.util.Duration;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ResourceBundle;
 
 public class SongViewController implements Initializable {
     private SongModel sm;
     private File selectedFile;
+    private Song songToEdit;
+    private double length = 0;
 
     @FXML
     private TextField txtTitle;
@@ -53,16 +57,23 @@ public class SongViewController implements Initializable {
         comboBoxGenre.getItems().addAll("Rock", "Pop", "Jazz", "Classical", "Hip Hop", "Sound effects");
 
         comboBoxGenre.getSelectionModel().selectFirst();
+
+        txtFile.setEditable(true);
     }
 
-    @FXML
-    private void onBtnSave(ActionEvent actionEvent){
-        String title = txtTitle.getText();
-        String artist = txtArtist.getText();
+    public void setSongToEdit(Song song){
+        this.songToEdit = song;
+        if(song != null){
+            txtTitle.setText(song.getTitle());
+            txtArtist.setText(song.getArtist());
+            txtTime.setText(song.getLengthString());
+            txtFile.setText(song.getFilePath().toString());
+            comboBoxGenre.getSelectionModel().select(song.getCategory());
+        }
+    }
 
-        //lav minutter og sekunder om til en double
-        String time = txtTime.getText();
-        double length = 0;
+    private double getLength(String time) {
+        //Make String of minutes and seconds into double decimal-minutes
         try {
             String[] timeParts = time.split(":");
             int minutes = Integer.parseInt(timeParts[0]);
@@ -71,22 +82,62 @@ public class SongViewController implements Initializable {
             length = minutes + seconds / 60.0; //laver længden om til decimal-minutter
         } catch (Exception e) {
             displayError(new Exception("Invalid time format"));
+        }
+        return length;
+    }
+
+    @FXML
+    private void onBtnSave(ActionEvent actionEvent){
+        String title = txtTitle.getText();
+        String artist = txtArtist.getText();
+        double length = getLength(txtTime.getText());
+        String category = comboBoxGenre.getSelectionModel().getSelectedItem();
+
+        //Prioritize txtFile for path; fall back to selectedFile if available
+        String filePathStr = txtFile.getText();
+        if(selectedFile != null){
+            filePathStr = selectedFile.getPath();
+        }
+
+        if(filePathStr == null || filePathStr.trim().isEmpty()){
+            displayError(new Exception("No file selected"));
             return;
         }
+        Path filePath = Paths.get(filePathStr);
 
-        String category = comboBoxGenre.getSelectionModel().getSelectedItem();
-        Path filePath = Paths.get(selectedFile.getPath());
-
-        if(selectedFile == null){
-            displayError(new Exception("No file selected"));
+        //Make path portable.
+        String projectRoot = System.getProperty("user.dir");
+        String audioDir = projectRoot + "/src/main/resources/dk/easv/mytunes/audio/";
+        if (filePath.startsWith(audioDir)){
+            filePathStr = filePathStr.substring(audioDir.length());
         }
 
-        Song newSong = new Song(-1, title, artist, length, category, filePath);
+        //For absolute paths, check if the file exists
+        if(filePath.isAbsolute()) {
+            File checkFile = new File(filePathStr);
+            if(!checkFile.exists()){
+                displayError(new Exception("File does not exist"));
+                return;
+            }
+        }
 
-        try {
-            sm.createSong(newSong);
+        try{
+            if(songToEdit != null){
+                //Update existing song
+                songToEdit.setTitle(title);
+                songToEdit.setArtist(artist);
+                songToEdit.setLength(length);
+                songToEdit.setCategory(category);
+                songToEdit.setFilePath(filePath);
+                sm.updateSong(songToEdit);
+            } else{
+                //Create a new song
+                Song newSong = new Song(-1, title, artist, length, category, filePath);
+                sm.createSong(newSong);
+            }
         } catch (Exception e) {
             displayError(e);
+            return;
         }
 
         Node source = (Node) actionEvent.getSource();
@@ -112,6 +163,32 @@ public class SongViewController implements Initializable {
         selectedFile = fileChooser.showOpenDialog(stage);
 
         if(selectedFile != null) {
+            // Copy the selected file to the project's audio package if it's not already there
+            String projectRoot = System.getProperty("user.dir");
+            Path audioDirPath = Paths.get(projectRoot, "src", "main", "resources", "dk", "easv", "mytunes", "audio");
+            File audioDir = audioDirPath.toFile();
+            if (!audioDir.exists()) {
+                boolean created = audioDir.mkdirs(); // Create the directory if it doesn't exist
+                if (!created) {
+                    displayError(new Exception("Could not create audio directory"));
+                    return;
+                }
+            }
+
+            Path sourcePath = selectedFile.toPath();
+            String fileName = selectedFile.getName();
+            Path targetPath = audioDirPath.resolve(fileName);
+
+            // Handle name conflicts by appending a number
+            int counter = 1;
+            while (Files.exists(targetPath)) {
+                String newFileName = fileName.replace(".mp3", "-" + counter + ".mp3");
+                targetPath = audioDirPath.resolve(newFileName);
+                counter++;
+            }
+
+            // Copy the file
+            Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
 
             txtFile.setText(selectedFile.getAbsolutePath());
 
@@ -133,10 +210,24 @@ public class SongViewController implements Initializable {
                 txtTime.setText("Error");
             }
         }
-
-
-
     }
+
+    public void setSongTitle(String songTitle){
+        txtTitle.setText(songTitle);
+    }
+
+    public void setSongArtist(String artist){
+        txtArtist.setText(artist);
+    }
+
+    public void setSongTime(String time){
+        txtTime.setText(time);
+    }
+
+    public void setSongFile(String file){
+        txtFile.setText(file);
+    }
+
 
     @FXML
     private void onBtnCancel(ActionEvent actionEvent){
@@ -148,5 +239,8 @@ public class SongViewController implements Initializable {
     private void displayError(Throwable t) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Something is wrong");
+        alert.setHeaderText("Error");
+        alert.setContentText(t.getMessage());
+        alert.showAndWait();
     }
 }

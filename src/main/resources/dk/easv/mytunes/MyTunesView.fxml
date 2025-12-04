@@ -34,7 +34,7 @@
                     <children>
                         <Button onAction="#onPrevious" prefHeight="40.0" prefWidth="41.0" styleClass="btnSymbols" text="⏮">
                      <font>
-                        <Font name="Open Sans" size="17.0" />
+                        <Font name="Open Sans" size="16.0" />
                      </font></Button>
                         <Button fx:id="btnPlay" onAction="#onBtnPlay" prefHeight="40.0" prefWidth="41.0" styleClass="btnSymbols" text="▶">
                      <HBox.margin>
@@ -45,7 +45,7 @@
                      </font></Button>
                         <Button onAction="#onNext" prefHeight="40.0" prefWidth="41.0" styleClass="btnSymbols" text="⏭">
                      <font>
-                        <Font name="Open Sans" size="17.0" />
+                        <Font name="Open Sans" size="16.0" />
                      </font></Button>
                         <Slider fx:id="volumeSlider" max="1.0" prefWidth="176.0">
                      <HBox.margin>

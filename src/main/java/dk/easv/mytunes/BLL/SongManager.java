@@ -1,6 +1,7 @@
 
 package dk.easv.mytunes.BLL;
 //Project imports
+import dk.easv.mytunes.BE.Playlist;
 import dk.easv.mytunes.DAL.song.ISongDataAccess;
 import dk.easv.mytunes.DAL.song.SongDAO_db;
 import dk.easv.mytunes.BE.Song;
@@ -14,12 +15,12 @@ public class SongManager {
     private int currentSongId = 0;
     private ISongDataAccess songDao;
 
-    public SongManager() throws Exception{
+    public SongManager() throws Exception {
         songDao = new SongDAO_db();
         songs = songDao.getAllSongs();
     }
 
-    public List<Song> getAllSongs() throws Exception{
+    public List<Song> getAllSongs() throws Exception {
         return songDao.getAllSongs();
     }
 
@@ -27,12 +28,12 @@ public class SongManager {
         return songDao.createSong(newSong);
     }
 
-    public void updateSong(Song song) throws Exception{
+    public void updateSong(Song song) throws Exception {
         songDao.updateSong(song);
 
     }
 
-    public void deleteSong(Song song) throws Exception{
+    public void deleteSong(Song song) throws Exception {
         songDao.deleteSong(song);
     }
 
@@ -41,10 +42,16 @@ public class SongManager {
         this.currentSongId = 0;
     }
 
+    public void getCurrentPlaylist() {
+        if (currentPlaylist != null && !currentPlaylist.isEmpty()) {
 
-    public Song getCurrrentSong(){
-        if(currentPlaylist != null && !currentPlaylist.isEmpty()) {
-            return songs.get(currentSongId);
+        }
+    }
+
+
+    public Song getCurrrentSong() {
+        if (currentPlaylist != null && !currentPlaylist.isEmpty()) {
+            return currentPlaylist.get(currentSongId);
         }
         return songs.get(currentSongId);
 
@@ -56,15 +63,17 @@ public class SongManager {
             if (currentSongId >= currentPlaylist.size()) {
                 currentSongId = 0;
             }
-            return getCurrrentSong();
+            return currentPlaylist.get(currentSongId);
         } else {
             currentSongId++;
             if (currentSongId >= songs.size()) {
                 currentSongId = 0;
             }
-            return getCurrrentSong();
+            return songs.get(currentSongId);
         }
     }
+
+
 
     public Song previousSong() {
         if (currentPlaylist != null && !currentPlaylist.isEmpty()) {
@@ -72,19 +81,21 @@ public class SongManager {
             if (currentSongId < 0) {
                 currentSongId = currentPlaylist.size() - 1;
             }
-            return getCurrrentSong();
+            return currentPlaylist.get(currentSongId);
         } else {
             currentSongId--;
             if (currentSongId < 0) {
                 currentSongId = songs.size() - 1;
             }
-            return getCurrrentSong();
+            return songs.get(currentSongId);
         }
     }
 
+
+
     public String getMediaUriForSong(Song song) {
         if (song.isInternalResource()) {
-            String resource= getClass().getResource("/dk/easv/mytunes/audio" + song.getFilePath()).toExternalForm();
+            String resource= getClass().getResource("/dk/easv/mytunes/audio/" + song.getFilePath()).toExternalForm();
 
             return resource;
         } else {

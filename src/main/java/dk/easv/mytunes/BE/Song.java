@@ -54,8 +54,8 @@ public class Song {
         return String.format("%02d:%02d", minutes, seconds); //% = format specifier, 02 = min 2 cifre, fill with 0 in front if necessary, d = whole number
     }
 
-    public void setLength(){
-        this.length = length;
+    public void setLength(double length){
+        this.length = this.length;
     }
 
     public String getCategory() {

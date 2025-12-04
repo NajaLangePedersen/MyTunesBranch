@@ -3,7 +3,6 @@ package dk.easv.mytunes.GUI.controllers;
 //project imports
 import dk.easv.mytunes.BE.Playlist;
 import dk.easv.mytunes.BE.Song;
-import dk.easv.mytunes.BLL.SongManager;
 import dk.easv.mytunes.GUI.models.PlaylistModel;
 import dk.easv.mytunes.GUI.models.SongModel;
 
@@ -13,6 +12,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -20,6 +20,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Modality;
@@ -29,30 +30,26 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class MyTunesController implements Initializable {
-    @FXML
-    private TextField txtSearch;
 
     private PlaylistModel pm;
     private SongModel sm;
-
     private MediaPlayer mp;
 
     private boolean isPaused = false;
-
     private Song currentSong;
 
     private ObservableList<Playlist> observablePlaylist = FXCollections.observableArrayList();
+    private ObservableList<Song> playlistSongObservable = FXCollections.observableArrayList();
 
     @FXML
     private TableView <Playlist> tblPlaylists;
-
-    private ObservableList<Song> playlistSongObservable = FXCollections.observableArrayList();
 
     @FXML
     private TableView <Song> tblSongs;
@@ -77,11 +74,12 @@ public class MyTunesController implements Initializable {
 
     @FXML
     private Label lblPlaylistName, lblPlayingSong;
-
     @FXML
     private Button btnPlay;
     @FXML
     private Slider volumeSlider;
+    @FXML
+    private TextField txtSearch;
 
 
     public MyTunesController() {
@@ -95,62 +93,22 @@ public class MyTunesController implements Initializable {
             pm = new PlaylistModel();
             sm = new SongModel();
 
-            colPlaylistName.setCellValueFactory(new PropertyValueFactory<>("Name"));
-            colPlaylistSongs.setCellValueFactory(new PropertyValueFactory<>("nrOfSongs"));
-            colPlaylistTime.setCellValueFactory(new PropertyValueFactory<>("totalLength"));
-
-            colSongTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
-            colSongArtist.setCellValueFactory(new PropertyValueFactory<>("artist"));
-            colSongCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
-            colSongTime.setCellValueFactory(new PropertyValueFactory<>("lengthString"));
+            setColumns();
 
             //connect tableviews to filtered list / observableList
             tblSongs.setItems(sm.getFilteredList());
             tblPlaylists.setItems(pm.getFilteredList());
 
             tblPlaylists.setItems(observablePlaylist);
-
             lstPlaylistSongs.setItems(playlistSongObservable);
 
             search();
-            /**
-            //live searching
-            txtSearch.textProperty().addListener((observableValue, oldValue, newValue) ->
-            {
-                sm.getFilteredList().setPredicate(song -> {
-                    //If filter text is empty, display all movies
-                    if (newValue == null || newValue.isEmpty()) {
-                        return true;
-                    }
 
-                    String lowerCaseFilter = newValue.toLowerCase();
-
-                    if (song.getTitle().toLowerCase().contains(lowerCaseFilter)) {
-                        return true;
-                    } else if (song.getArtist().toLowerCase().contains(lowerCaseFilter)) {
-                        return true;
-                    } else {
-                        return song.getCategory().toLowerCase().contains(lowerCaseFilter);
-                    }
-
-                });
-            });
-             */
-
-            //sort lists
-            SortedList<Song> sortedSongData = new SortedList<>(sm.getFilteredList());
-            sortedSongData.comparatorProperty().bind(tblSongs.comparatorProperty());
-            tblSongs.setItems(sortedSongData);
-
-            SortedList<Playlist> sortedPlaylistData = new SortedList<>(pm.getFilteredList());
-            sortedPlaylistData.comparatorProperty().bind(tblPlaylists.comparatorProperty());
-            tblPlaylists.setItems(sortedPlaylistData);
+            sortLists();
 
             onSelectedPlaylist();
 
-            volumeSlider.setMin(0.0); //mute
-            volumeSlider.setMax(1);
-            volumeSlider.setValue(0.5);
+            setVolumeSlider();
 
             doubleClickHandlers();
 
@@ -184,7 +142,76 @@ public class MyTunesController implements Initializable {
         });
     }
 
-    private void openPlaylistView() throws IOException {
+    private void setColumns() {
+        colPlaylistName.setCellValueFactory(new PropertyValueFactory<>("Name"));
+        colPlaylistSongs.setCellValueFactory(new PropertyValueFactory<>("nrOfSongs"));
+        colPlaylistTime.setCellValueFactory(new PropertyValueFactory<>("totalLength"));
+
+        colSongTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+        colSongArtist.setCellValueFactory(new PropertyValueFactory<>("artist"));
+        colSongCategory.setCellValueFactory(new PropertyValueFactory<>("category"));
+        colSongTime.setCellValueFactory(new PropertyValueFactory<>("lengthString"));
+    }
+
+    private void sortLists() {
+        //sort lists
+        SortedList<Song> sortedSongData = new SortedList<>(sm.getFilteredList());
+        sortedSongData.comparatorProperty().bind(tblSongs.comparatorProperty());
+        tblSongs.setItems(sortedSongData);
+
+        SortedList<Playlist> sortedPlaylistData = new SortedList<>(pm.getFilteredList());
+        sortedPlaylistData.comparatorProperty().bind(tblPlaylists.comparatorProperty());
+        tblPlaylists.setItems(sortedPlaylistData);
+    }
+
+    private void onSelectedPlaylist() {
+        tblPlaylists.getSelectionModel().selectedItemProperty().addListener((obs,oldVal, newVal) -> {
+            if (newVal != null) {
+                try {
+                    List<Song> playlistSongs = pm.getSongsForPlaylist(newVal.getId());
+
+                    newVal.setSongs(playlistSongs);
+                    playlistSongObservable.setAll(playlistSongs);
+                } catch (Exception e) {
+                    displayError(e);
+                    //e.printStackTrace();
+                }
+                lblPlaylistName.setText(newVal.getName());
+            }
+        });
+
+        //initial selection
+        if (!tblPlaylists.getItems().isEmpty()) {
+            tblPlaylists.getSelectionModel().selectFirst();
+        }
+
+    }
+
+    private void setVolumeSlider() {
+        volumeSlider.setMin(0.0); //mute
+        volumeSlider.setMax(1);
+        volumeSlider.setValue(0.5);
+    }
+
+    private void doubleClickHandlers() {
+        EventHandler<MouseEvent> doubleClickHandler = event -> {
+            if (event.getClickCount() == 2) {
+                Song songToPlay = getSong();
+                if (songToPlay != null) {
+                    playSong(songToPlay);
+                    btnPlay.setText("⏸");
+                    lblPlayingSong.setText(songToPlay.getTitle() + " is playing");
+                    isPaused = false;
+                    currentSong = songToPlay;
+                }
+            }
+        };
+        tblSongs.setOnMouseClicked(doubleClickHandler);
+        lstPlaylistSongs.setOnMouseClicked(doubleClickHandler);
+    }
+
+    @FXML
+    private void onCreatePlaylist(ActionEvent actionEvent) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/dk/easv/mytunes/PlaylistView.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         Stage stage = new Stage();
@@ -199,13 +226,22 @@ public class MyTunesController implements Initializable {
     }
 
     @FXML
-    private void onCreatePlaylist(ActionEvent actionEvent) throws IOException {
-        openPlaylistView();
-    }
-
-    @FXML
     private void onEditPlaylist(ActionEvent actionEvent) throws IOException {
-        openPlaylistView();
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/dk/easv/mytunes/PlaylistView.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
+        Stage stage = new Stage();
+        PlaylistViewController pvc = fxmlLoader.getController();
+        pvc.setModel(this.pm);
+        stage.setTitle("Playlist View");
+        stage.setScene(scene);
+
+        //set playlist name in new view
+        Playlist selectedPlaylist = tblPlaylists.getSelectionModel().getSelectedItem();
+        pvc.setPlaylistName(selectedPlaylist.getName());
+
+        //Gør så du ikke kan åbne et til vindue før du har lukket det første du åbnede.
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.show();
     }
 
     @FXML
@@ -221,7 +257,8 @@ public class MyTunesController implements Initializable {
         }
     }
 
-    private void openSongView() throws IOException {
+    @FXML
+    private void onCreateSong(ActionEvent actionEvent) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/dk/easv/mytunes/SongView.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         Stage stage = new Stage();
@@ -236,18 +273,35 @@ public class MyTunesController implements Initializable {
     }
 
     @FXML
-    private void onCreateSong(ActionEvent actionEvent) throws IOException {
-        openSongView();
+    private void onEditSong(ActionEvent actionEvent) throws IOException {
+        Song selectedSong = tblSongs.getSelectionModel().getSelectedItem();
+        if (selectedSong ==null) {
+            return;
+        }
+
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/dk/easv/mytunes/SongView.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
+        Stage stage = new Stage();
+        SongViewController svc = fxmlLoader.getController();
+        svc.setModel(this.sm);
+        svc.setSongToEdit(selectedSong);
+        stage.setTitle("Edit song");
+        stage.setScene(scene);
+
+        //Gør så du ikke kan åbne et til vindue før du har lukket det første du åbnede.
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.show();
+
+
     }
 
-    @FXML
-    private void onEditSong(ActionEvent actionEvent) throws IOException {
-        /*Song selectedSong = tblSongs.getSelectionModel().getSelectedItem();
-        if (selectedSong != null){
-            openSongView(selectedSong);
-
+    private String pathToDisplay(Path filePath) {
+        if(filePath == null){
+            return "";
         }
-        else openSongView(null);*/
+        else {
+            return filePath.toString();
+        }
 
     }
 
@@ -349,29 +403,6 @@ public class MyTunesController implements Initializable {
                 displayError(err);
             }
         }
-    }
-
-    private void onSelectedPlaylist() {
-        tblPlaylists.getSelectionModel().selectedItemProperty().addListener((obs,oldVal, newVal) -> {
-            if (newVal != null) {
-                try {
-                    List<Song> playlistSongs = pm.getSongsForPlaylist(newVal.getId());
-
-                    newVal.setSongs(playlistSongs);
-                    playlistSongObservable.setAll(playlistSongs);
-                } catch (Exception e) {
-                    displayError(e);
-                    //e.printStackTrace();
-                }
-                lblPlaylistName.setText(newVal.getName());
-            }
-        });
-
-        //initial selection
-        if (!tblPlaylists.getItems().isEmpty()) {
-            tblPlaylists.getSelectionModel().selectFirst();
-        }
-
     }
 
     private void displayError(Throwable t) {
@@ -499,33 +530,6 @@ public class MyTunesController implements Initializable {
         playSong(next);
         lblPlayingSong.setText(next.getTitle() + " is playing");
     }
-
-    private void doubleClickHandlers() {
-        tblSongs.setOnMouseClicked(event -> {
-            if (event.getClickCount() ==2) {
-                Song selectedSong = tblSongs.getSelectionModel().getSelectedItem();
-                if(selectedSong != null) {
-                    playSong(selectedSong);
-                    btnPlay.setText("⏸");
-                    isPaused = false;
-                    currentSong = selectedSong;
-                }
-            }
-        });
-
-        lstPlaylistSongs.setOnMouseClicked(event -> {
-            if(event.getClickCount() == 2) {
-                Song selectedPlaylistSong = lstPlaylistSongs.getSelectionModel().getSelectedItem();
-                if(selectedPlaylistSong != null) {
-                    playSong(selectedPlaylistSong);
-                    btnPlay.setText("⏸");
-                    isPaused = false;
-                    currentSong = selectedPlaylistSong;
-                }
-            }
-        });
-    }
-
 
 }
 
