@@ -105,6 +105,10 @@
     -fx-font-weight: bold;
 }
 
+.table-view .table-row-cell .table-cell.colCenteredText {
+    -fx-alignment: CENTER;
+}
+
 /* LIST_VIEW */
 .list-view {
     -fx-background-color: transparent;
