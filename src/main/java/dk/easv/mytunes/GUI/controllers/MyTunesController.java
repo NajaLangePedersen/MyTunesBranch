@@ -75,10 +75,8 @@ public class MyTunesController implements Initializable {
     @FXML
     private TableColumn<Song, String> colSongTime;
 
-
-
     @FXML
-    private Label lblPlaylistName;
+    private Label lblPlaylistName, lblPlayingSong;
 
     @FXML
     private Button btnPlay;
@@ -114,6 +112,8 @@ public class MyTunesController implements Initializable {
 
             lstPlaylistSongs.setItems(playlistSongObservable);
 
+            search();
+            /**
             //live searching
             txtSearch.textProperty().addListener((observableValue, oldValue, newValue) ->
             {
@@ -135,6 +135,7 @@ public class MyTunesController implements Initializable {
 
                 });
             });
+             */
 
             //sort lists
             SortedList<Song> sortedSongData = new SortedList<>(sm.getFilteredList());
@@ -157,6 +158,30 @@ public class MyTunesController implements Initializable {
             displayError(e);
             e.printStackTrace();
         }
+    }
+
+    private void search(){
+        //live searching
+        txtSearch.textProperty().addListener((observableValue, oldValue, newValue) ->
+        {
+            sm.getFilteredList().setPredicate(song -> {
+                //If filter text is empty, display all movies
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+
+                String lowerCaseFilter = newValue.toLowerCase();
+
+                if (song.getTitle().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (song.getArtist().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else {
+                    return song.getCategory().toLowerCase().contains(lowerCaseFilter);
+                }
+
+            });
+        });
     }
 
     private void openPlaylistView() throws IOException {
@@ -216,14 +241,14 @@ public class MyTunesController implements Initializable {
     }
 
     @FXML
-    private void onEditSong(ActionEvent actionEvent) throws IOException { /*
-        Song selectedSong = tblSongs.getSelectionModel().getSelectedItem();
+    private void onEditSong(ActionEvent actionEvent) throws IOException {
+        /*Song selectedSong = tblSongs.getSelectionModel().getSelectedItem();
         if (selectedSong != null){
-            openSongView();
+            openSongView(selectedSong);
 
         }
-        else openSongView(onBtnSave);
-*/
+        else openSongView(null);*/
+
     }
 
     @FXML
@@ -366,14 +391,8 @@ public class MyTunesController implements Initializable {
     @FXML
     private void onBtnPlay(ActionEvent actionEvent) {
         //play song from tblSongs
-        Song selectedSong = tblSongs.getSelectionModel().getSelectedItem();
-        Song selectedPlaylistSong = lstPlaylistSongs.getSelectionModel().getSelectedItem();
 
-        //If selectedSong is not null, then songToPlay = selectedSong; otherwise, songToPlay = selectedPlaylistSong
-        //Song songToPlay = (selectedSong != null) ? selectedSong : selectedPlaylistSong;
-        Song songToPlay; if(selectedSong != null) {
-            songToPlay = selectedSong;
-        } else { songToPlay = selectedPlaylistSong; }
+        Song songToPlay = getSong();
 
         //if no song is selected, exit method
         if(songToPlay == null) {
@@ -383,6 +402,7 @@ public class MyTunesController implements Initializable {
         if(mp == null) {
             playSong(songToPlay);
             btnPlay.setText("⏸");
+            lblPlayingSong.setText(songToPlay.getTitle() + " is playing");
             isPaused = false;
         }
         //if something is playing, and it isn't paused
@@ -392,6 +412,7 @@ public class MyTunesController implements Initializable {
                 mp.stop();
                 playSong(songToPlay);
                 btnPlay.setText("⏸");
+                lblPlayingSong.setText(songToPlay.getTitle() + " is playing");
                 isPaused = false;
             }
             // pause if the selected song is the one playing
@@ -407,6 +428,7 @@ public class MyTunesController implements Initializable {
             if (!songToPlay.equals(currentSong)) {
                 mp.stop();
                 playSong(songToPlay);
+                lblPlayingSong.setText(songToPlay.getTitle() + " is playing");
             }
             //unpause current song
             else{
@@ -415,6 +437,19 @@ public class MyTunesController implements Initializable {
             btnPlay.setText("⏸");
             isPaused = false;
         }
+    }
+
+    private Song getSong() {
+        Song selectedSong = tblSongs.getSelectionModel().getSelectedItem();
+        Song selectedPlaylistSong = lstPlaylistSongs.getSelectionModel().getSelectedItem();
+
+        //If selectedSong is not null, then songToPlay = selectedSong; otherwise, songToPlay = selectedPlaylistSong
+        //Song songToPlay = (selectedSong != null) ? selectedSong : selectedPlaylistSong;
+        Song songToPlay;
+        if(selectedSong != null) {
+            songToPlay = selectedSong;
+        } else { songToPlay = selectedPlaylistSong; }
+        return songToPlay;
     }
 
     private void playSong(Song song) {
@@ -436,6 +471,7 @@ public class MyTunesController implements Initializable {
             mp.setOnEndOfMedia(() -> {
                 isPaused = false;
                 btnPlay.setText("▶");
+                lblPlayingSong.setText("");
             });
             // Binding our volume slider to the media player's volume property.
             mp.volumeProperty().bind(volumeSlider.valueProperty());
@@ -449,12 +485,11 @@ public class MyTunesController implements Initializable {
     }
 
 
-
     @FXML
     private void onPrevious(ActionEvent actionEvent) {
         Song prev = sm.previousSong();
         playSong(prev);
-
+        lblPlayingSong.setText(prev.getTitle() + " is playing");
     }
 
 
@@ -462,6 +497,7 @@ public class MyTunesController implements Initializable {
     private void onNext(ActionEvent actionEvent) {
         Song next = sm.nextSong();
         playSong(next);
+        lblPlayingSong.setText(next.getTitle() + " is playing");
     }
 
     private void doubleClickHandlers() {

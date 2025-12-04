@@ -53,7 +53,7 @@
                      </HBox.margin></Slider>
                     </children>
                 </HBox>
-            <Label fx:id="lblPlayingSong" alignment="CENTER" contentDisplay="CENTER" prefHeight="17.0" prefWidth="465.0" text="... is playing">
+            <Label fx:id="lblPlayingSong" alignment="CENTER" contentDisplay="CENTER" prefHeight="17.0" prefWidth="465.0">
                <font>
                   <Font name="System Bold" size="14.0" />
                </font>

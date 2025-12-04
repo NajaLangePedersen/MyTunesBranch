@@ -84,9 +84,9 @@ public class SongManager {
 
     public String getMediaUriForSong(Song song) {
         if (song.isInternalResource()) {
-            URL resource = getClass().getResource("/dk/easv/mytunes/audio/hype-drill-music-438398.mp3");
+            String resource= getClass().getResource("/dk/easv/mytunes/audio" + song.getFilePath()).toExternalForm();
 
-            return resource != null ? resource.toString() : null;
+            return resource;
         } else {
             return song.getFilePath().toUri().toString();
         }
