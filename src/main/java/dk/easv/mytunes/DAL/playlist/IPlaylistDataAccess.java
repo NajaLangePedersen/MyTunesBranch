@@ -26,4 +26,7 @@ public interface IPlaylistDataAccess {
     void deleteSongFromPlaylist(int playlistId, int songId) throws Exception;
 
     void updateSongOrder(int playlistId, List<Song> newOrder);
+
+    List<Song> getOrderedSongsForPlaylist(int playlistId) throws Exception;
+
 }

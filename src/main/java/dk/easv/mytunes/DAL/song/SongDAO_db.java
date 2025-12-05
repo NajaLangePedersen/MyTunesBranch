@@ -102,6 +102,7 @@ public class SongDAO_db implements ISongDataAccess{
             stmt.setDouble(3, song.getLength());
             stmt.setString(4, song.getCategory());
             stmt.setString(5, song.getFilePath().toString());
+            stmt.setInt(6, song.getId());
 
             //Run the sql statement
             stmt.executeUpdate();

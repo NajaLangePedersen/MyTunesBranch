@@ -26,6 +26,10 @@ public class PlaylistModel {
         filteredList = new FilteredList<>(playlistsToBeViewed);
     }
 
+    public List<Song> getOrderedSongsForPlaylist(int playlistId) throws Exception {
+        return pMan.getOrderedSongsForPlaylist(playlistId);
+    }
+
     public FilteredList<Playlist> getFilteredList(){
         return filteredList;
     }

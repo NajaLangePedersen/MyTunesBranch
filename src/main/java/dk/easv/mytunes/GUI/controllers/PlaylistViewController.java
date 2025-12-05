@@ -14,11 +14,10 @@ import javafx.stage.Stage;
 
 public class PlaylistViewController{
     private PlaylistModel pm;
-
+    private Playlist playlistToEdit;
 
     @FXML
     private TextField txtName;
-
 
 
     public PlaylistViewController(){
@@ -39,22 +38,28 @@ public class PlaylistViewController{
 
     @FXML
     private void onBtnSave(ActionEvent actionEvent) throws Exception {
-        if(!txtName.getText().isEmpty()){
-            String name = txtName.getText();
+
+        String name = txtName.getText();
+
+        if (playlistToEdit != null) {
+            playlistToEdit.setName(name);
+            pm.updatePlaylist(playlistToEdit);
+        }
+        else if (!txtName.getText().isEmpty()){
 
             Playlist newPlaylist = new Playlist(-1, name);
-
             pm.createPlaylist(newPlaylist);
-
-            Node source = (Node) actionEvent.getSource();
-            Stage window = (Stage) source.getScene().getWindow();
-            window.close();
-
         }
+        Node source = (Node) actionEvent.getSource();
+        Stage window = (Stage) source.getScene().getWindow();
+        window.close();
     }
 
-    public void setPlaylistName(String playlistName) {
-        txtName.setText(playlistName);
+    public void setPlaylistName(Playlist playlist) {
+        this.playlistToEdit = playlist;
+        if (playlist != null) {
+            txtName.setText(playlist.getName());
+        }
     }
 
 

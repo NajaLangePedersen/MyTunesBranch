@@ -19,6 +19,11 @@ public class PlaylistManager {
         playlistDAO = new PlaylistDAO_db();
     }
 
+    public List<Song> getOrderedSongsForPlaylist(int playlistId) throws Exception {
+            return playlistDAO.getOrderedSongsForPlaylist(playlistId);
+
+    }
+
     public List<Playlist> getAllPlaylists() throws Exception{
         return playlistDAO.getAllPlaylists();
     }

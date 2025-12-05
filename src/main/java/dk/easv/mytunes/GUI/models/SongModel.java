@@ -46,7 +46,6 @@ public class SongModel {
         sMan.updateSong(song);
         int index = songsToBeViewed.indexOf(song);
         songsToBeViewed.set(index,song);
-
     }
 
     public void deleteSong(Song song) throws Exception{
@@ -55,13 +54,11 @@ public class SongModel {
         songsToBeViewed.remove(song);
     }
 
-    public void setActivePlaylist(List<Song> playlistSongs) {
-        sMan.setCurrentPlaylist(playlistSongs);
+    public void setCurrentPlaylist(List<Song> playlistSongs){
+        sMan .setCurrentPlaylist(playlistSongs);
     }
 
-    public Song getCurrentSong() {
-        return sMan.getCurrrentSong();
-    }
+
 
     public Song nextSong(){
         return sMan.nextSong();
@@ -72,5 +69,9 @@ public class SongModel {
 
     public String getMediaUriForSong(Song song) {
         return sMan.getMediaUriForSong(song);
+    }
+
+    public void syncCurrentIndexTo(Song song) {
+        sMan.syncCurrentIndexTo(song);
     }
 }

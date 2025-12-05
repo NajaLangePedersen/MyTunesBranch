@@ -145,7 +145,7 @@ public class PlaylistDAO_db implements IPlaylistDataAccess {
         List<Song> playlistSongs = new ArrayList<>();
 
         //Selects all songs from playlist
-        String sql = "SELECT Songs.SongId, Songs.Artist, Songs.Title, Songs.Length, Songs.Category, Songs.FilePath " +
+        String sql = "SELECT Songs.SongId, Songs.Title, Songs.Artist, Songs.Length, Songs.Category, Songs.FilePath " +
                 "FROM Songs " +
                 "JOIN PlaylistSongs ON Songs.SongId = PlaylistSongs.SongId " +
                 "WHERE PlaylistSongs.PlaylistId = ? " +
@@ -164,8 +164,8 @@ public class PlaylistDAO_db implements IPlaylistDataAccess {
 
                 Song song = new Song(
                         rs.getInt("SongId"),
-                        rs.getString("Artist"),
                         rs.getString("Title"),
+                        rs.getString("Artist"),
                         rs.getDouble("Length"),
                         rs.getString("Category"),
                         filePath
@@ -260,10 +260,40 @@ public class PlaylistDAO_db implements IPlaylistDataAccess {
             }
             stmt.executeBatch();
             conn.commit();
-            System.out.println("database updated successfully");
         }
         catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
+
+    @Override
+    public List<Song> getOrderedSongsForPlaylist(int playlistId) throws Exception{
+    List<Song> songs = new ArrayList<>();
+    String sql = "SELECT Songs.* " +
+            "FROM PlayListSongs " +
+            "JOIN Songs ON PlayListSongs.SongId = Songs.SongId " +
+            "WHERE PlayListSongs.PlayListId = ? " +
+            "ORDER BY PlayListSongs.Position ASC";
+
+    try (Connection conn = databaseConnector.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)){
+
+        stmt.setInt(1, playlistId);
+        ResultSet rs = stmt.executeQuery();
+
+        while (rs.next()) {
+            Song song = new Song(
+                    rs.getInt("SongId"),
+                    rs.getString("Title"),
+                    rs.getString("Artist"),
+                    rs.getDouble("Length"),
+                    rs.getString("Category"),
+                    Paths.get(rs.getString("filePath"))
+            );
+        }
+    }
+    return songs;
+    }
+
 }

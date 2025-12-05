@@ -37,19 +37,13 @@ public class SongManager {
         songDao.deleteSong(song);
     }
 
-    public void setCurrentPlaylist(List<Song> playlistSongs) {
-        this.currentPlaylist = playlistSongs;
+    public void setCurrentPlaylist  (List<Song> playlistSongs){
+        this.currentPlaylist = playlistSongs != null ? playlistSongs:List.of();
         this.currentSongId = 0;
     }
 
-    public void getCurrentPlaylist() {
-        if (currentPlaylist != null && !currentPlaylist.isEmpty()) {
 
-        }
-    }
-
-
-    public Song getCurrrentSong() {
+    public Song getCurrentSong() {
         if (currentPlaylist != null && !currentPlaylist.isEmpty()) {
             return currentPlaylist.get(currentSongId);
         }
@@ -63,7 +57,7 @@ public class SongManager {
             if (currentSongId >= currentPlaylist.size()) {
                 currentSongId = 0;
             }
-            return currentPlaylist.get(currentSongId);
+            return getCurrentSong();
         } else {
             currentSongId++;
             if (currentSongId >= songs.size()) {
@@ -73,25 +67,21 @@ public class SongManager {
         }
     }
 
-
-
     public Song previousSong() {
         if (currentPlaylist != null && !currentPlaylist.isEmpty()) {
             currentSongId--;
             if (currentSongId < 0) {
                 currentSongId = currentPlaylist.size() - 1;
             }
-            return currentPlaylist.get(currentSongId);
+            return getCurrentSong();
         } else {
             currentSongId--;
             if (currentSongId < 0) {
                 currentSongId = songs.size() - 1;
             }
-            return songs.get(currentSongId);
+            return getCurrentSong();
         }
     }
-
-
 
     public String getMediaUriForSong(Song song) {
         if (song.isInternalResource()) {
@@ -102,4 +92,27 @@ public class SongManager {
             return song.getFilePath().toUri().toString();
         }
     }
+
+
+    public void syncCurrentIndexTo(Song song) {
+        if (song == null) return;
+        if (currentPlaylist != null && !currentPlaylist.isEmpty()) {
+            for (int i = 0; i < currentPlaylist.size(); i++) {
+                if (currentPlaylist.get(i).getId() == song.getId()) {
+                    currentSongId = i;
+                    return;
+                }
+            }
+            // if not found, keep currentSongId (or set to 0)
+        } else if (songs != null && !songs.isEmpty()) {
+            for (int i = 0; i < songs.size(); i++) {
+                if (songs.get(i).getId() == song.getId()) {
+                    currentSongId = i;
+                    return;
+                }
+            }
+        }
+    }
+
+
 }

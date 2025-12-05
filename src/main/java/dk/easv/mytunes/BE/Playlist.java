@@ -4,7 +4,6 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.ObservableList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +12,10 @@ public class Playlist {
     private int id;
     private String name;
     private List<Song> playlistSongs = new ArrayList<>();
-    /**
+
     private IntegerProperty nrOfSongs = new SimpleIntegerProperty() {
     };
     private StringProperty totalLength = new SimpleStringProperty();
-     */
 
 
     public Playlist(int id, String name) {
@@ -40,7 +38,6 @@ public class Playlist {
     public void setName(String name) {
         this.name = name;
     }
-
 
     public List<Song> getSongs() {
         return playlistSongs;
@@ -79,11 +76,11 @@ public class Playlist {
 
         return String.format("%02d:%02d:%02d", totalHours, totalMinutes, remainingSeconds); //% = format specifier, 02 = min 2 cifre, fill with 0 in front if necessary, d = whole number
     }
-    /**
+
     private void updateCalculatedFields(){
         nrOfSongs.set(playlistSongs.size());
         totalLength.set(getTotalLength());
     }
-     */
+
 
 }

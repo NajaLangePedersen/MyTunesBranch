@@ -55,7 +55,7 @@ public class Song {
     }
 
     public void setLength(double length){
-        this.length = this.length;
+        this.length = length;
     }
 
     public String getCategory() {

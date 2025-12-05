@@ -54,32 +54,36 @@ public class SongViewController implements Initializable {
     }
 
     public void initialize(URL location, ResourceBundle resources){
-        comboBoxGenre.getItems().addAll("Rock", "Pop", "Jazz", "Classical", "Hip Hop", "Sound effects");
+        comboBoxGenre.getItems().addAll("Rock", "Pop", "Jazz", "Classical", "Hip Hop", "Metal", "Musical", "Alternative", "EDM", "Rock and Roll");
 
         comboBoxGenre.getSelectionModel().selectFirst();
 
         txtFile.setEditable(true);
     }
 
+    /**
+     * Does so if a song isnt null it will be able to be editet and does so it doesnt make a new copy of the song.
+     * @param song
+     */
     public void setSongToEdit(Song song){
         this.songToEdit = song;
         if(song != null){
             txtTitle.setText(song.getTitle());
             txtArtist.setText(song.getArtist());
             txtTime.setText(song.getLengthString());
-            txtFile.setText(song.getFilePath().toString());
+            txtFile.setText(song.getFilePath() != null ? song.getFilePath().toString() : "");
             comboBoxGenre.getSelectionModel().select(song.getCategory());
         }
     }
 
     private double getLength(String time) {
-        //Make String of minutes and seconds into double decimal-minutes
+        //Make String of minutes and seconds into double in seconds
         try {
             String[] timeParts = time.split(":");
             int minutes = Integer.parseInt(timeParts[0]);
             int seconds = Integer.parseInt(timeParts[1]);
 
-            length = minutes + seconds / 60.0; //laver længden om til decimal-minutter
+            length = minutes + seconds / 60.0; //converts length into seconds
         } catch (Exception e) {
             displayError(new Exception("Invalid time format"));
         }
@@ -103,13 +107,17 @@ public class SongViewController implements Initializable {
             displayError(new Exception("No file selected"));
             return;
         }
-        Path filePath = Paths.get(filePathStr);
 
-        //Make path portable.
+        //Normalize and relativize the path
+        Path inputPath = Paths.get(filePathStr).normalize();
         String projectRoot = System.getProperty("user.dir");
-        String audioDir = projectRoot + "/src/main/resources/dk/easv/mytunes/audio/";
-        if (filePath.startsWith(audioDir)){
-            filePathStr = filePathStr.substring(audioDir.length());
+        Path audioDirPath = Paths.get(projectRoot, "src", "main", "resources", "dk", "easv", "mytunes", "audio").normalize();
+        Path filePath;
+        if(inputPath.startsWith(audioDirPath)){
+            filePath = audioDirPath.relativize(inputPath);
+
+        } else {
+            filePath = inputPath;
         }
 
         //For absolute paths, check if the file exists
@@ -190,11 +198,14 @@ public class SongViewController implements Initializable {
             // Copy the file
             Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-            txtFile.setText(selectedFile.getAbsolutePath());
+            //set the textfield to the relative name.
+            txtFile.setText(targetPath.getFileName().toString());
+
+            selectedFile = null;
 
             //find length of file and display it in the time textfield
             try {
-                Media media = new Media(selectedFile.toURI().toString());
+                Media media = new Media(targetPath.toUri().toString());
                 MediaPlayer tempPlayer = new MediaPlayer(media); //need temporary mediaplayer to get length of song
 
                 //when media player is ready, display length of song
@@ -210,22 +221,6 @@ public class SongViewController implements Initializable {
                 txtTime.setText("Error");
             }
         }
-    }
-
-    public void setSongTitle(String songTitle){
-        txtTitle.setText(songTitle);
-    }
-
-    public void setSongArtist(String artist){
-        txtArtist.setText(artist);
-    }
-
-    public void setSongTime(String time){
-        txtTime.setText(time);
-    }
-
-    public void setSongFile(String file){
-        txtFile.setText(file);
     }
 
 
