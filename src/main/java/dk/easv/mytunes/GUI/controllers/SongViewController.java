@@ -65,7 +65,7 @@ public class SongViewController implements Initializable {
      * Does so if a song isnt null it will be able to be editet and does so it doesnt make a new copy of the song.
      * @param song
      */
-    public void setSongToEdit(Song song){
+    public void setSongToEdit(Song song) {
         this.songToEdit = song;
         if(song != null){
             txtTitle.setText(song.getTitle());
@@ -77,13 +77,13 @@ public class SongViewController implements Initializable {
     }
 
     private double getLength(String time) {
-        //Make String of minutes and seconds into double in seconds
+        //Make String of minutes and seconds into double in decimal-minutes
         try {
             String[] timeParts = time.split(":");
             int minutes = Integer.parseInt(timeParts[0]);
             int seconds = Integer.parseInt(timeParts[1]);
 
-            length = minutes + seconds / 60.0; //converts length into seconds
+            length = minutes + seconds / 60.0; //converts length into decimal-minutes
         } catch (Exception e) {
             displayError(new Exception("Invalid time format"));
         }
@@ -154,72 +154,72 @@ public class SongViewController implements Initializable {
     }
 
     @FXML
-    private void onBtnChooseFile(ActionEvent actionEvent) throws IOException {
+    private void onBtnChooseFile(ActionEvent actionEvent) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select MP3 File");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("MP3 Files (*.mp3)", "*.mp3")
+        );
 
-        FileChooser.ExtensionFilter mp3Filter = new FileChooser.ExtensionFilter("MP3 Files (*.mp3)", "*.mp3");
-        fileChooser.getExtensionFilters().add(mp3Filter);
-
-        String userHome = System.getProperty("user.home");
-        File initialDirectory = new File(userHome + "/Music");
-        if(initialDirectory.exists()){
-            fileChooser.setInitialDirectory(initialDirectory);
+        File musicDir = new File(System.getProperty("user.home"), "Music");
+        if (musicDir.exists()) {
+            fileChooser.setInitialDirectory(musicDir);
         }
 
         Stage stage = (Stage) txtFile.getScene().getWindow();
-        selectedFile = fileChooser.showOpenDialog(stage);
+        File chosen = fileChooser.showOpenDialog(stage);
+        if (chosen == null) return;
 
-        if(selectedFile != null) {
-            // Copy the selected file to the project's audio package if it's not already there
-            String projectRoot = System.getProperty("user.dir");
-            Path audioDirPath = Paths.get(projectRoot, "src", "main", "resources", "dk", "easv", "mytunes", "audio");
-            File audioDir = audioDirPath.toFile();
-            if (!audioDir.exists()) {
-                boolean created = audioDir.mkdirs(); // Create the directory if it doesn't exist
-                if (!created) {
-                    displayError(new Exception("Could not create audio directory"));
-                    return;
-                }
-            }
+        // Resolve audio dir in project
+        Path audioDirPath = Paths.get(
+                System.getProperty("user.dir"),
+                "src", "main", "resources", "dk", "easv", "mytunes", "audio"
+        );
+        File audioDir = audioDirPath.toFile();
+        if (!audioDir.exists() && !audioDir.mkdirs()) {
+            displayError(new Exception("Could not create audio directory"));
+            return;
+        }
 
-            Path sourcePath = selectedFile.toPath();
-            String fileName = selectedFile.getName();
-            Path targetPath = audioDirPath.resolve(fileName);
+        Path sourcePath = chosen.toPath();
+        String fileName = chosen.getName();
+        Path targetPath = audioDirPath.resolve(fileName);
+        int counter = 1;
+        while (Files.exists(targetPath)) {
+            String base = fileName.substring(0, fileName.lastIndexOf(".mp3"));
+            String safe = base + "-" + counter + ".mp3";
+            targetPath = audioDirPath.resolve(safe);
+            counter++;
+        }
 
-            // Handle name conflicts by appending a number
-            int counter = 1;
-            while (Files.exists(targetPath)) {
-                String newFileName = fileName.replace(".mp3", "-" + counter + ".mp3");
-                targetPath = audioDirPath.resolve(newFileName);
-                counter++;
-            }
+        try {
+            Files.copy(sourcePath, targetPath);
+        } catch (IOException ex) {
+            displayError(new Exception("Failed to copy file: " + ex.getMessage(), ex));
+            return;
+        }
 
-            // Copy the file
-            Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+        // Store only the file name in the text field
+        txtFile.setText(targetPath.getFileName().toString());
+        selectedFile = null; // not needed afterward
 
-            //set the textfield to the relative name.
-            txtFile.setText(targetPath.getFileName().toString());
-
-            selectedFile = null;
-
-            //find length of file and display it in the time textfield
-            try {
-                Media media = new Media(targetPath.toUri().toString());
-                MediaPlayer tempPlayer = new MediaPlayer(media); //need temporary mediaplayer to get length of song
-
-                //when media player is ready, display length of song
-                tempPlayer.setOnReady(() -> {
-                    Duration duration = media.getDuration();
-                    int minutes = (int) duration.toMinutes(); //total length of song in minutes
-                    int seconds = (int) (duration.toSeconds() % 60); //total length of song in seconds - but only what's left after diving with 60 (the minutes)
-
-                    txtTime.setText(String.format("%02d:%02d", minutes, seconds)); //% = format specifier, 02 = min 2 cifre, fill with 0 in front if necessary, d = whole number
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
+        // Determine length and display
+        try {
+            Media media = new Media(targetPath.toUri().toString());
+            MediaPlayer tempPlayer = new MediaPlayer(media);
+            tempPlayer.setOnReady(() -> {
+                Duration duration = media.getDuration();
+                int minutes = (int) duration.toMinutes();
+                int seconds = (int) (duration.toSeconds() % 60);
+                txtTime.setText(String.format("%02d:%02d", minutes, seconds));
+                tempPlayer.dispose(); // clean up
+            });
+            tempPlayer.setOnError(() -> {
                 txtTime.setText("Error");
-            }
+                tempPlayer.dispose();
+            });
+        } catch (Exception e) {
+            txtTime.setText("Error");
         }
     }
 
