@@ -54,7 +54,7 @@ public class SongViewController implements Initializable {
     }
 
     public void initialize(URL location, ResourceBundle resources){
-        comboBoxGenre.getItems().addAll("Rock", "Pop", "Jazz", "Classical", "Hip Hop", "Metal", "Musical", "Alternative", "EDM", "Rock and Roll");
+        comboBoxGenre.getItems().addAll("Rock", "Pop", "Jazz", "Rap", "Classical", "Hip Hop", "Metal", "Musical", "Alternative", "EDM", "Rock and Roll");
 
         comboBoxGenre.getSelectionModel().selectFirst();
 

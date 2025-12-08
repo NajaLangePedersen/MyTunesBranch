@@ -6,7 +6,10 @@ import dk.easv.mytunes.DAL.song.ISongDataAccess;
 import dk.easv.mytunes.DAL.song.SongDAO_db;
 import dk.easv.mytunes.BE.Song;
 //java imports
+import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class SongManager {
@@ -84,12 +87,27 @@ public class SongManager {
     }
 
     public String getMediaUriForSong(Song song) {
-        if (song.isInternalResource()) {
-            String resource= getClass().getResource("/dk/easv/mytunes/audio/" + song.getFilePath()).toExternalForm();
+        if (song == null || song.getFilePath() == null) return null;
 
-            return resource;
-        } else {
-            return song.getFilePath().toUri().toString();
+        Path p = song.getFilePath();
+
+        if (song.isInternalResource()) {
+            String projectRoot = System.getProperty("user.dir");
+            Path audioPath = Paths.get(projectRoot, "src", "main", "resources", "dk", "easv", "mytunes", "audio", p.toString()).normalize();
+
+            File audioFile = audioPath.toFile();
+            if (audioFile.exists()) {
+                return audioFile.toURI().toString();
+            }
+
+            URL resource = getClass().getResource("/dk/easv/mytune/audio/" + p.getFileName().toString());
+            if (resource != null) {
+                return resource.toExternalForm();
+            }
+
+            return null;
+            } else {
+            return p.toUri().toString();
         }
     }
 
